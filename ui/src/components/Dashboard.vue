@@ -1,4 +1,5 @@
 <template>
+  
     <div class="dashboard">
       <h1>Dashboard</h1>
       <p>Randevu yönetim sistemine hoş geldiniz.</p>

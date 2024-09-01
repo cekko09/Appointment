@@ -14,14 +14,43 @@
           <li>
             <router-link to="/appointments/new">Randevu Oluştur</router-link>
           </li>
+          <li><router-link to="/add-employee">Çalışan Ekle</router-link></li>
+          <li><router-link to="/employees">Çalışanlar</router-link></li>
+          <li>
+            <button @click="logout">Logout</button>
+          </li>
         </ul>
       </nav>
     </aside>
   </template>
   
   <script>
+  import axios from 'axios';
+  import { useRouter } from 'vue-router';
   export default {
-    name: 'Sidebar'
+    name: 'Sidebar',
+    setup() {
+    const router = useRouter();
+
+   
+    const logout = async () => {
+      try {
+        await axios.post('http://localhost:8000/api/logout', {}, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        localStorage.removeItem('token'); // Token'ı temizle
+        // Giriş durumunu manuel olarak güncelle
+        window.dispatchEvent(new Event('storage')); // Yeni bir event tetikleyin
+        router.push('/');
+      } catch (error) {
+        console.error('Logout failed', error);
+      }
+    };
+
+    return { logout };
+  },
   };
   </script>
   <style scoped>

@@ -4,7 +4,7 @@
       <div>
         <label for="filter">Emlakçı Çalışanı:</label>
         <select v-model="selectedUser">
-          <option v-for="user in users" :key="user.id" :value="user">{{ user.name }}</option>
+          <option v-for="user in users" :key="user.id" :value="user">{{ user.email }}</option>
         </select>
       </div>
       <ul>
@@ -17,13 +17,14 @@
   </template>
   
   <script>
+  import axios from 'axios';
   export default {
     name: 'AppointmentList',
     data() {
       return {
         selectedUser: null,
         users: [], // Kullanıcıları API'den çekeceğiz
-        appointments: [] // Randevuları API'den çekeceğiz
+        appointments: []
       };
     },
     computed: {
@@ -31,6 +32,17 @@
         if (!this.selectedUser) return this.appointments;
         return this.appointments.filter(a => a.user.id === this.selectedUser.id);
       }
+    },
+    async mounted() {
+       
+        try {
+          const response = await axios.get('http://localhost:8000/api/employees');
+          this.users = response.data;
+          console.log(this.users);
+          
+        } catch (error) {
+          console.error(error);
+        }
     },
     methods: {
       editAppointment(id) {
