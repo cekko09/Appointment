@@ -130,7 +130,7 @@
   
   <style scoped>
   .employee-list-container {
-    max-width: 800px;
+    width: 50%;
     margin: 50px auto;
     padding: 20px;
     border: 1px solid #ddd;

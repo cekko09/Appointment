@@ -6,7 +6,7 @@
       <nav>
         <ul>
           <li>
-            <router-link to="/">Dashboard</router-link>
+            <router-link to="/dashboard">Dashboard</router-link>
           </li>
           <li>
             <router-link to="/appointments">Randevular</router-link>
@@ -57,10 +57,7 @@
   .sidebar {
     width: 250px;
     background-color: #2c3e50;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
+    min-height: 100vh;
     padding: 20px;
     color: #ecf0f1;
     transition: width 0.3s ease;

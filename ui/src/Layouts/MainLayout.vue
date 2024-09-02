@@ -1,6 +1,6 @@
 <!-- src/layouts/MainLayout.vue -->
 <template>
-    <div>
+    <div class="main-container">
       <!-- Giriş yapıldıysa Sidebar gösterilecek -->
       <Sidebar />
       <router-view></router-view>
@@ -17,4 +17,8 @@
     },
   };
   </script>
-  
+  <style scoped>
+.main-container {
+  display: flex;
+}
+</style>

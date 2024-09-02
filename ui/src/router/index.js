@@ -25,6 +25,7 @@ const routes = [
   {
     path: '/dashboard',
     component: MainLayout, // Giriş yapıldıktan sonra kullanılacak layout
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -47,6 +48,12 @@ const routes = [
         component: Employee,
         meta: { requiresAuth: true },
       },
+      {
+        path: '/AppointmentEdit/:id',
+        name: 'AppointmentEdit',
+        component: AppointmentEdit,
+        meta: { requiresAuth: true },
+      }
     ],
   },
  

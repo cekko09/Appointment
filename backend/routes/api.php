@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
 use Illuminate\Http\Request;
@@ -27,3 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']); // Çalışan silme
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/appointments', [AppointmentController::class, 'index']); // Randevuları listeleme
+    Route::post('/appointments', [AppointmentController::class, 'store']); // Yeni randevu ekleme
+    Route::put('/appointments/{appointment}', [AppointmentController::class, 'update']); // Randevu güncelleme
+    Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy']); // Randevu silme
+    Route::get('appointments/{id}', [AppointmentController::class, 'show']);
+
+});

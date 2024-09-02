@@ -47,7 +47,7 @@
   
   <style scoped>
   .add-employee-container {
-    max-width: 500px;
+    width: 50%;
     margin: 50px auto;
     padding: 20px;
     border: 1px solid #ddd;

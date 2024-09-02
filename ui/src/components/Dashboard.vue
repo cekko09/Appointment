@@ -14,7 +14,6 @@
  
 <style scoped>
 .dashboard {
-  margin-left: 260px;
   padding: 20px;
   background-color: #ecf0f1;
   min-height: 100vh;
@@ -23,6 +22,7 @@
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .dashboard h2 {
