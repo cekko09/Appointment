@@ -1,38 +1,29 @@
 <?php
 
-use App\Http\Controllers\AppointmentController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AppointmentController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+// Giriş ve Çıkış Rotası
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
 
-
-Route::post('login', [AuthController::class, 'login']);
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/employees', [EmployeeController::class, 'index']); // Çalışanları listeleme
-    Route::post('/employees', [EmployeeController::class, 'store']); // Yeni çalışan ekleme
-    Route::put('/employees/{employee}', [EmployeeController::class, 'update']); // Çalışan güncelleme
-    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']); // Çalışan silme
+// Sadece admin ve employee için kullanılabilir genel rota
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Randevu rotaları (Hem Admin hem de Employee erişimi)
+    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
+    Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+    Route::get('/appointments/{id}', [AppointmentController::class, 'show'])->name('appointments.show');
+    Route::put('/appointments/{id}', [AppointmentController::class, 'update'])->name('appointments.update');
+    Route::delete('/appointments/{id}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/appointments', [AppointmentController::class, 'index']); // Randevuları listeleme
-    Route::post('/appointments', [AppointmentController::class, 'store']); // Yeni randevu ekleme
-    Route::put('/appointments/{appointment}', [AppointmentController::class, 'update']); // Randevu güncelleme
-    Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy']); // Randevu silme
-    Route::get('appointments/{id}', [AppointmentController::class, 'show']);
-
+// Sadece admin için kullanılabilir rotalar
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    // Çalışan rotaları (Sadece Admin erişimi)
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+    Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
+    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 });

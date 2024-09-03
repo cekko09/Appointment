@@ -1,52 +1,57 @@
 <template>
-    <div class="login-container">
-      <h2 class="login-title">Süperadmin Girişi</h2>
-      <form @submit.prevent="login" class="login-form">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input v-model="email" type="email" id="email" required />
-        </div>
-        <div class="form-group">
-          <label for="password">Parola</label>
-          <input v-model="password" type="password" id="password" required />
-        </div>
-        <button type="submit" class="login-button">Giriş Yap</button>
-      </form>
-    </div>
-  </template>
-  
-  <script>
+  <div class="login-container">
+    <h2 class="login-title">Süperadmin Girişi</h2>
+    <form @submit.prevent="login" class="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input v-model="email" type="email" id="email" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Parola</label>
+        <input v-model="password" type="password" id="password" required />
+      </div>
+      <button type="submit" class="login-button">Giriş Yap</button>
+    </form>
+  </div>
+</template>
+
+<script>
 import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
 
 export default {
-  setup() {
-    const router = useRouter();
-    const email = ref('');
-    const password = ref('');
-
-    const login = async () => {
+  data() {
+    return {
+      email: '',
+      password: '',
+    };
+  },
+  methods: {
+    async login() {
       try {
-        await axios.get('http://localhost:8000/sanctum/csrf-cookie');
         const response = await axios.post('http://localhost:8000/api/login', {
-          email: email.value,
-          password: password.value,
+          email: this.email,
+          password: this.password,
         });
 
-        localStorage.setItem('token', response.data.access_token);
-        // Giriş durumunu manuel olarak güncelle
-        window.dispatchEvent(new Event('storage')); // Yeni bir event tetikleyin
-        router.push('/dashboard');
-      } catch (error) {
-        console.error('Login failed', error);
-      }
-    };
+        const { token, user } = response.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('userRole', user.role);
 
-    return { email, password, login };
+        if (user.role === 'employee') {
+          this.$router.push('/appointments');
+        } else {
+          this.$router.push('/dashboard');
+        }
+      } catch (error) {
+        console.error('Giriş hatası:', error.response?.data);
+        alert('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      }
+    },
   },
 };
 </script>
+
+
   <style scoped>
   .login-container {
     max-width: 400px;

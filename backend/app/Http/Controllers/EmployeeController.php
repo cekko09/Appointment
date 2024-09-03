@@ -3,53 +3,102 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
-    // Çalışanları listeleme
+    /**
+     * Tüm çalışanları listele.
+     */
     public function index()
     {
-        $employees = Employee::all();
+        $employees = Employee::with('user')->get(); // Çalışanları ve ilgili kullanıcıları getir
         return response()->json($employees);
     }
 
-    // Çalışan ekleme
+    /**
+     * Yeni bir çalışan ekle ve ona bir kullanıcı oluştur.
+     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
         ]);
 
+        // Kullanıcı oluştur
+        $user = User::create([
+            'name' => $validatedData['first_name'] . ' ' . $validatedData['last_name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'role' => 'employee',  // Rol olarak "employee" atanır
+        ]);
+
+        // Çalışan oluştur
         $employee = Employee::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'user_id' => $user->id,  // Kullanıcı ID'sini ilişkilendir
         ]);
 
-        return response()->json($employee, 201);
+        return response()->json([
+            'message' => 'Çalışan başarıyla eklendi.',
+            'employee' => $employee,
+            'user' => $user,
+        ], 201);
     }
 
-    // Çalışan güncelleme
-    public function update(Request $request, Employee $employee)
+    /**
+     * Belirli bir çalışanın bilgilerini güncelle.
+     */
+    public function update(Request $request, $id)
     {
-        $request->validate([
+        $employee = Employee::findOrFail($id);
+        $user = User::findOrFail($employee->user_id);
+
+        $validatedData = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email,' . $employee->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id, // Mevcut kullanıcı hariç email benzersiz olmalı
+            'password' => 'nullable|string|min:8', // Şifre opsiyonel
         ]);
 
-        $employee->update($request->all());
+        // Kullanıcıyı güncelle
+        $user->name = $validatedData['first_name'] . ' ' . $validatedData['last_name'];
+        $user->email = $validatedData['email'];
+        if (!empty($validatedData['password'])) {
+            $user->password = Hash::make($validatedData['password']);
+        }
+        $user->save();
 
-        return response()->json($employee);
+        // Çalışanı güncelle
+        $employee->first_name = $validatedData['first_name'];
+        $employee->last_name = $validatedData['last_name'];
+        $employee->save();
+
+        return response()->json([
+            'message' => 'Çalışan başarıyla güncellendi.',
+            'employee' => $employee,
+        ]);
     }
 
-    // Çalışan silme
-    public function destroy(Employee $employee)
+    /**
+     * Belirli bir çalışanı sil ve ilgili kullanıcıyı da kaldır.
+     */
+    public function destroy($id)
     {
+        $employee = Employee::findOrFail($id);
+        $user = User::findOrFail($employee->user_id);
+
+        // Çalışan ve kullanıcıyı sil
         $employee->delete();
-        return response()->json(['message' => 'Çalışan başarıyla silindi']);
+        $user->delete();
+
+        return response()->json(['message' => 'Çalışan başarıyla silindi.']);
     }
 }

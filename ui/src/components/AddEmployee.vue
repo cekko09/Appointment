@@ -1,86 +1,109 @@
 <template>
-    <div class="add-employee-container">
-      <h2>Çalışan Ekle</h2>
-      <form @submit.prevent="addEmployee" class="employee-form">
-        <input v-model="firstName" type="text" placeholder="Adı" required />
-        <input v-model="lastName" type="text" placeholder="Soyadı" required />
-        <input v-model="email" type="email" placeholder="E-posta" required />
-        <button type="submit" class="submit-button">Ekle</button>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        firstName: '',
-        lastName: '',
-        email: '',
-      };
+  <div class="employee-form">
+    <h2>Çalışan Ekle</h2>
+    <form @submit.prevent="addEmployee">
+      <div>
+        <label for="first-name">Ad:</label>
+        <input v-model="firstName" id="first-name" required />
+      </div>
+      <div>
+        <label for="last-name">Soyad:</label>
+        <input v-model="lastName" id="last-name" required />
+      </div>
+      <div>
+        <label for="email">E-posta:</label>
+        <input v-model="email" type="email" id="email" required />
+      </div>
+      <div>
+        <label for="password">Şifre:</label>
+        <input v-model="password" type="password" id="password" required />
+      </div>
+      <button type="submit">Çalışan Ekle</button>
+    </form>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+    };
+  },
+  methods: {
+    async addEmployee() {
+      try {
+        const response = await axios.post('http://localhost:8000/api/employees', {
+          first_name: this.firstName,
+          last_name: this.lastName,
+          email: this.email,
+          password: this.password,
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        alert('Çalışan başarıyla eklendi!');
+        this.$router.push('/employees');
+      } catch (error) {
+        alert('Çalışan eklenemedi. Lütfen bilgileri kontrol edin.');
+      }
     },
-    methods: {
-      async addEmployee() {
-        try {
-          await axios.post('http://localhost:8000/api/employees', {
-            first_name: this.firstName,
-            last_name: this.lastName,
-            email: this.email,
-          }, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          alert('Çalışan eklendi!');
-          this.firstName = '';
-          this.lastName = '';
-          this.email = '';
-        } catch (error) {
-          console.error('Çalışan eklenemedi:', error);
-        }
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .add-employee-container {
-    width: 50%;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .employee-form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .employee-form input {
-    margin-bottom: 15px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .submit-button {
-    padding: 10px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .submit-button:hover {
-    background-color: #45a049;
-  }
-  </style>
-  
+  },
+};
+</script>
+
+<style scoped>
+.employee-form {
+  width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+}
+
+.employee-form h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.employee-form form div {
+  margin-bottom: 15px;
+}
+
+.employee-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.employee-form input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.employee-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.employee-form button:hover {
+  background-color: #0069d9;
+}
+</style>

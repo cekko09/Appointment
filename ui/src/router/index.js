@@ -33,26 +33,26 @@ const routes = [
         component: Dashboard,
         meta: { requiresAuth: true }, // Auth gerektiren rota
       },
-      { path: '/appointments', component: AppointmentList , meta: { requiresAuth: true },},
-      { path: '/appointments/new', component: AppointmentForm , meta: { requiresAuth: true },},
-      { path: '/appointments/edit/:id', component: AppointmentEdit, meta: { requiresAuth: true }, },
+      { path: '/appointments', component: AppointmentList , meta: { requiresAuth: true, roles: ['employee', 'admin'] },},
+      { path: '/appointments/new', component: AppointmentForm , meta: { requiresAuth: true, roles: ['employee', 'admin'] },},
+      { path: '/appointments/edit/:id', component: AppointmentEdit,meta: { requiresAuth: true, roles: ['employee', 'admin'] }, },
       {
         path: '/add-employee',
         name: 'AddEmployee',
         component: AddEmployee,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, roles: ['admin'] },
       },
       {
         path: '/employees',
         name: 'Employee',
         component: Employee,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, roles: ['admin'] },
       },
       {
         path: '/AppointmentEdit/:id',
         name: 'AppointmentEdit',
         component: AppointmentEdit,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, roles: ['employee', 'admin'] }, 
       }
     ],
   },
@@ -66,9 +66,17 @@ const router = createRouter({
   routes
 });
 router.beforeEach((to, from, next) => {
-  const loggedIn = localStorage.getItem('token');
-  if (to.matched.some(record => record.meta.requiresAuth) && !loggedIn) {
-    next('/');
+  const isLoggedIn = !!localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole'); // Kullanıcı rolünü al
+
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isLoggedIn) {
+      next({ name: 'Login' });
+    } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+      next({ name: 'Appointments' }); // Erişim yetkisi yoksa yönlendirme
+    } else {
+      next();
+    }
   } else {
     next();
   }

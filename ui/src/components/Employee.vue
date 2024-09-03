@@ -15,7 +15,7 @@
         <form @submit.prevent="updateEmployee" class="employee-form">
           <input v-model="selectedEmployee.first_name" type="text" placeholder="Adı" required />
           <input v-model="selectedEmployee.last_name" type="text" placeholder="Soyadı" required />
-          <input v-model="selectedEmployee.email" type="email" placeholder="E-posta" required />
+          <input v-model="selectedEmployee.user.email" type="email" placeholder="E-posta" required />
           <button type="submit" class="submit-button">Kaydet</button>
           <button @click="cancelEdit" type="button" class="cancel-button">İptal</button>
         </form>
@@ -54,6 +54,8 @@
             },
           });
           employees.value = response.data;
+          console.log(response.data);
+          
           message.value = ''; // Önceki mesajı temizle
         } catch (error) {
           message.value = 'Çalışanlar yüklenemedi.';
@@ -99,7 +101,7 @@
           await axios.put(`http://localhost:8000/api/employees/${selectedEmployee.value.id}`, {
             first_name: selectedEmployee.value.first_name,
             last_name: selectedEmployee.value.last_name,
-            email: selectedEmployee.value.email,
+            email: selectedEmployee.value.user.email,
           }, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
