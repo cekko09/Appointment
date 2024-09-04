@@ -91,6 +91,18 @@
   nav ul li a:hover {
     background-color: #34495e;
   }
+  button{
+    text-decoration: none;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+  }
+  button:hover{
+     background-color: #34495e;
+  }
   
   /* Mobil cihazlar için yan menüyü gizleme ve açma */
   @media (max-width: 768px) {

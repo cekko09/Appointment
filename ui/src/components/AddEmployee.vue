@@ -18,7 +18,7 @@
         <label for="password">Şifre:</label>
         <input v-model="password" type="password" id="password" required />
       </div>
-      <button type="submit">Çalışan Ekle</button>
+      <button type="submit" :disabled="isFormInvalid">Çalışan Ekle</button>
     </form>
   </div>
 </template>
@@ -34,6 +34,11 @@ export default {
       email: '',
       password: '',
     };
+  },
+  computed: {
+    isFormInvalid() {
+      return !this.firstName || !this.lastName || !this.email || !this.password;
+    },
   },
   methods: {
     async addEmployee() {
@@ -103,7 +108,12 @@ export default {
   font-size: 16px;
 }
 
-.employee-form button:hover {
+.employee-form button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.employee-form button:hover:not([disabled]) {
   background-color: #0069d9;
 }
 </style>

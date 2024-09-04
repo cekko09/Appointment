@@ -18,32 +18,26 @@ export default {
       default: -0.1278,
     }
   },
+  data() {
+    return {
+      map: null,
+      directionsService: null,
+      directionsRenderer: null,
+      marker: null,
+      markers: [], // Tüm işaretçileri saklayacağız
+    };
+  },
   mounted() {
     this.loadMapScript();
   },
   methods: {
     loadMapScript() {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAunuRDlZ1mHwkhG0a_9YoEIfyScIQC5jo&libraries=places`;
-        script.async = true;
-        script.defer = true;
-        script.onload = this.initMap;
-        document.head.appendChild(script);
-      },
-    selectLocation() {
-      const location = {
-        lat: this.marker.getPosition().lat(),
-        lng: this.marker.getPosition().lng(),
-      };
-      this.$emit('locationSelected', location);
-    },
-    selectLocation() {
-      if (this.marker) {
-        this.$emit('addressSelected', {
-          lat: this.marker.getPosition().lat(),
-          lng: this.marker.getPosition().lng(),
-        });
-      }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAunuRDlZ1mHwkhG0a_9YoEIfyScIQC5jo&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = this.initMap;
+      document.head.appendChild(script);
     },
     initMap() {
       const mapOptions = {
@@ -51,20 +45,54 @@ export default {
         zoom: 14,
       };
       this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
-      
-      this.marker = new google.maps.Marker({
-        position: mapOptions.center,
+
+      this.directionsService = new google.maps.DirectionsService();
+      this.directionsRenderer = new google.maps.DirectionsRenderer();
+      this.directionsRenderer.setMap(this.map);
+
+      this.map.addListener('click', (event) => {
+        this.placeMarker(event.latLng);
+      });
+    },
+    placeMarker(location) {
+      // Önceki tüm işaretçileri kaldır
+      this.markers.forEach(marker => marker.setMap(null));
+      this.markers = [];
+
+      // Yeni işaretçiyi oluştur ve haritaya ekle
+      const newMarker = new google.maps.Marker({
+        position: location,
         map: this.map,
         draggable: true,
       });
 
-      google.maps.event.addListener(this.marker, 'dragend', (event) => {
-        this.$emit('addressSelected', {
-          lat: event.latLng.lat(),
-          lng: event.latLng.lng(),
-        
-          
-        });
+      this.markers.push(newMarker);
+
+      // Haritayı merkezle
+      this.map.setCenter(location);
+
+      // Yeni seçilen adresi yayına al
+      this.$emit('addressSelected', {
+        lat: location.lat(),
+        lng: location.lng(),
+      });
+
+      // Yol güzergahını güncelle
+      this.calculateRoute(location);
+    },
+    calculateRoute(destination) {
+      const request = {
+        origin: { lat: this.initialLat, lng: this.initialLng },
+        destination: destination,
+        travelMode: 'DRIVING',
+      };
+
+      this.directionsService.route(request, (result, status) => {
+        if (status === 'OK') {
+          this.directionsRenderer.setDirections(result);
+        } else {
+          console.error('Yol hesaplanamadı:', status);
+        }
       });
     },
   },

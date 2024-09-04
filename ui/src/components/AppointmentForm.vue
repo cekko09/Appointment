@@ -192,7 +192,7 @@ export default {
     // Harita script'ini yükler ve haritayı başlatır
     loadMapScript() {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAunuRDlZ1mHwkhG0a_9YoEIfyScIQC5jo&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = this.initMap;
