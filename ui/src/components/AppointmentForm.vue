@@ -4,8 +4,12 @@
     <form @submit.prevent="submitForm">
       <!-- Randevu Adresi Posta Kodu -->
       <div>
-        <label for="address">Randevu Adresi Posta Kodu:</label>
-        <input v-model="appointment.postcode" id="address" required />
+        <label for="postcode">Randevu Adresi Posta Kodu:</label>
+        <input v-model="appointment.postcode" id="postcode" required />
+      </div>
+      <div>
+        <label for="adress">Randevu Adresi:</label>
+        <input v-model="appointment.adress" id="adress" readonly />
       </div>
 
       <!-- Randevu Tarihi -->
@@ -71,9 +75,10 @@ export default {
           phone: ''
         },
         employee: null,
-        location: null
+        adress: '',
       },
-      employees: [], // Çalışanlar API'den çekilecek
+      employees: [],
+      addresses: [], // Çalışanlar API'den çekilecek
       selectedAddress: null,
       distance: '0',
       travelDuration: '0',
@@ -86,9 +91,10 @@ export default {
     };
   },
   methods: {
-    // Haritadan seçilen adresi alır ve mesafe hesaplamalarını yapar
+    // Haritadan seçilen adresi alır ve formu günceller
     onAddressSelected(location) {
       this.selectedAddress = location;
+      this.appointment.adress = location.formatted_address; // Adres inputunu güncelle
       this.calculateDistanceAndDuration(location);
     },
     
@@ -141,8 +147,7 @@ export default {
     },
 
     // Randevu oluşturmak için form verilerini gönderme
-   // Randevu oluşturmak için form verilerini gönderme
-   async submitForm() {
+    async submitForm() {
       try {
         const response = await axios.post('http://localhost:8000/api/appointments', {
           postcode: this.appointment.postcode,
@@ -175,6 +180,7 @@ export default {
         }
       }
     },
+
     // Çalışanları API'den çeker
     async fetchEmployees() {
       try {
@@ -188,21 +194,9 @@ export default {
         console.error('Çalışanlar yüklenemedi:', error);
       }
     },
-    
-    // Harita script'ini yükler ve haritayı başlatır
-    loadMapScript() {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAunuRDlZ1mHwkhG0a_9YoEIfyScIQC5jo&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = this.initMap;
-      document.head.appendChild(script);
-    }
   },
   created() {
     this.fetchEmployees(); // Çalışanları çekmek için API çağrısı
-  },
-  mounted() {
   },
 };
 </script>

@@ -71,10 +71,18 @@ export default {
       // Haritayı merkezle
       this.map.setCenter(location);
 
-      // Yeni seçilen adresi yayına al
-      this.$emit('addressSelected', {
-        lat: location.lat(),
-        lng: location.lng(),
+      // Adres bilgilerini alın
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: location }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          this.$emit('addressSelected', {
+            lat: location.lat(),
+            lng: location.lng(),
+            formatted_address: results[0].formatted_address,
+          });
+        } else {
+          console.error('Adres bulunamadı:', status);
+        }
       });
 
       // Yol güzergahını güncelle
