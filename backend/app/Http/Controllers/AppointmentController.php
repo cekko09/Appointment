@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
@@ -14,7 +13,7 @@ class AppointmentController extends Controller
     public function index(Request $request)
     {
         $employeeId = $request->query('employee_id');
-        
+
         // Çalışana göre filtreleme
         if ($employeeId) {
             $appointments = Appointment::where('employee_id', $employeeId)->get();
@@ -31,7 +30,7 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'postcode' => 'required|string',
+            'postcode' => 'nullable|string',
             'appointment_date' => 'required|date',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email|max:255',
@@ -43,6 +42,7 @@ class AppointmentController extends Controller
             'duration' => 'required|string',
             'departure_time' => 'required', // Ofisten çıkış zamanı zorunlu
             'available_time' => 'required', // Müsait olacağı zaman zorunlu
+            'address' => 'string', // Adres alanını doğrula
         ]);
 
         $appointment = Appointment::create($validatedData);
@@ -56,7 +56,7 @@ class AppointmentController extends Controller
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
-            'postcode' => 'required|string',
+            'postcode' => 'nullable|string',
             'appointment_date' => 'required|date',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email|max:255',
@@ -68,6 +68,7 @@ class AppointmentController extends Controller
             'duration' => 'required|string',
             'departure_time' => 'required', // Ofisten çıkış zamanı zorunlu
             'available_time' => 'required', // Müsait olacağı zaman zorunlu
+            'address' => 'required|string', // Adres alanını doğrula
         ]);
 
         $appointment = Appointment::findOrFail($id);
@@ -86,9 +87,13 @@ class AppointmentController extends Controller
 
         return response()->json(null, 204);
     }
+
+    /**
+     * Randevuyu göster.
+     */
     public function show($id)
-{
-    $appointment = Appointment::findOrFail($id);
-    return response()->json($appointment);
-}
+    {
+        $appointment = Appointment::findOrFail($id);
+        return response()->json($appointment);
+    }
 }

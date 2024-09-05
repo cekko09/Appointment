@@ -2,6 +2,9 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { createPinia } from 'pinia'; 
 
 axios.defaults.baseURL = 'http://localhost:8000/api';
 axios.interceptors.request.use(config => {
@@ -11,5 +14,10 @@ axios.interceptors.request.use(config => {
   }
   return config;
 });
+const app = createApp(App);
+const pinia = createPinia(); 
 
-createApp(App).use(router).mount('#app');
+app.use(pinia); 
+app.use(router);
+
+app.mount('#app');

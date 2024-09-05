@@ -5,12 +5,20 @@
       <!-- Randevu Adresi Posta Kodu -->
       <div>
         <label for="postcode">Randevu Adresi Posta Kodu:</label>
-        <input v-model="appointment.postcode" id="postcode" required />
+        <input v-model="appointment.postcode" id="postcode" @input="fetchPostcodeDetails" />
       </div>
-      <div>
-        <label for="adress">Randevu Adresi:</label>
-        <input v-model="appointment.adress" id="adress" readonly />
+
+      <!-- Adres Input veya Selectbox -->
+      <div v-if="addresses.length === 0">
+        <label for="address">Randevu Adresi:</label>
+        <input v-model="appointment.address" id="address" readonly />
       </div>
+      <div v-else-if="addresses.length > 0 && appointment.postcode && !addressSelectedFromMap">
+  <label for="address-select">Adres Seç:</label>
+  <select v-model="appointment.address" id="address-select" @change="handleAddressChange">
+    <option v-for="(address, index) in addresses" :key="index" :value="address">{{ address }}</option>
+  </select>
+</div>
 
       <!-- Randevu Tarihi -->
       <div>
@@ -41,7 +49,7 @@
       </div>
 
       <!-- Harita Bileşeni -->
-      <Map @addressSelected="onAddressSelected" />
+      <Map ref="mapComponent" @addressSelected="onAddressSelected" />
 
       <!-- Mesafe ve Süre Bilgileri -->
       <p>Ofis ile randevu adresi arası mesafe: {{ distance }} km</p>
@@ -50,7 +58,7 @@
       <p>Randevudan Sonra Müsait Olacağı Zaman: {{ estimatedAvailableTime }}</p>
       
       <!-- Randevu Oluşturma Butonu -->
-      <button type="submit">Randevu Oluştur</button>
+      <button :disabled="!isFormValid" type="submit">Randevu Oluştur</button>
     </form>
   </div>
 </template>
@@ -75,10 +83,10 @@ export default {
           phone: ''
         },
         employee: null,
-        adress: '',
+        address: '',
       },
       employees: [],
-      addresses: [], // Çalışanlar API'den çekilecek
+      addresses: [], // Posta koduna göre adresleri tutacak dizi
       selectedAddress: null,
       distance: '0',
       travelDuration: '0',
@@ -87,31 +95,138 @@ export default {
       officeLocation: {
         lat: 51.5074, // Londra örnek konum
         lng: -0.1278,
-      }
+      },
+      addressSelectedFromMap: false
     };
   },
+  watch: {
+    'appointment.postcode': function(newVal) {
+      if (!newVal) {
+        this.appointment.address = ''; // Posta kodu silindiğinde adresi sıfırlayın
+        this.addressSelectedFromMap = false;
+      }
+    }
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.appointment.date &&
+        this.appointment.client.name &&
+        this.appointment.client.email &&
+        this.appointment.client.phone &&
+        this.appointment.employee &&
+        this.appointment.address
+      );
+    }
+  },
   methods: {
-    // Haritadan seçilen adresi alır ve formu günceller
-    onAddressSelected(location) {
-      this.selectedAddress = location;
-      this.appointment.adress = location.formatted_address; // Adres inputunu güncelle
-      this.calculateDistanceAndDuration(location);
-    },
+    handleAddressChange(event) {
+    this.selectAddress(event);  // İlk metodu çağır
+    this.updateTimes();  // İkinci metodu çağır
+  },
+  selectAddress() {
+  const selected = this.appointment.address;
+  if (selected) {
+    // Adresin enlem ve boylamını almak için Google Geocoding API'sini kullanın
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: selected }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const location = results[0].geometry.location;
+        const lat = location.lat();
+        const lng = location.lng();
+
+        // Haritaya marker ekleyin ve haritayı merkeze alın
+        if (this.$refs.mapComponent && this.$refs.mapComponent.setMarker) {
+          this.$refs.mapComponent.setMarker(lat, lng);
+        }
+
+        // Koordinatları güncelle
+        this.selectedAddress = { lat, lng };
+
+        // Mesafe ve süre hesaplamasını yap
+        this.calculateDistanceAndDuration(this.selectedAddress);
+      } else {
+        console.error('Adres geocode edilmedi:', status);
+      }
+    });
+  } else {
+    console.error("Geçersiz adres veya konum bilgisi.");
+  }
+},
+onAddressSelected(location) {
+  if (location && location.lat && location.lng) {
+    this.selectedAddress = location;
+    this.appointment.address = location.formatted_address; // Adres inputunu güncelle
+    this.calculateDistanceAndDuration(location);
     
-    // Randevu tarihi veya adres değiştiğinde tahmini zamanları güncelle
+    // Posta kodunu Google Geocoding API sonuçlarından ayıklayın
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: { lat: location.lat, lng: location.lng } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const postcodeComponent = results[0].address_components.find(comp => comp.types.includes("postal_code"));
+        if (postcodeComponent) {
+          this.appointment.postcode = postcodeComponent.long_name; // Posta kodunu inputa yerleştirin
+          this.addressSelectedFromMap = true; // Adres haritadan seçildi
+        }
+      }
+    });
+  } else {
+    console.error('Geçersiz konum bilgisi alındı.');
+  }
+},
+    async fetchPostcodeDetails() {
+      if (this.appointment.postcode) {
+        try {
+          const postcodeResponse = await axios.get(`http://localhost:8000/api/fetch-postcode-details/${this.appointment.postcode}`);
+          console.log('Postcode API Response:', postcodeResponse.data); // Debug için eklendi
+          
+          if (postcodeResponse.data && postcodeResponse.data.result) {
+            const latitude = postcodeResponse.data.result.latitude;
+            const longitude = postcodeResponse.data.result.longitude;
+
+            const googleResponse = await axios.get(`http://localhost:8000/api/fetch-nearby-addresses`, {
+              params: {
+                lat: latitude,
+                lon: longitude
+              }
+            });
+
+            console.log('Google Maps API Response:', googleResponse.data); // Debug için eklendi
+
+            if (googleResponse.data && googleResponse.data.results) {
+              this.addresses = googleResponse.data.results.map(item => item.formatted_address);
+            } else {
+              this.addresses = [];
+              console.warn('Yakınlarda adres bulunamadı veya response formatı beklenen gibi değil.');
+            }
+          } else {
+            this.addresses = [];
+            console.warn('Postcode için sonuç bulunamadı.');
+          }
+        } catch (error) {
+          console.error('Adresler yüklenemedi:', error);
+          this.addresses = []; // Hata durumunda adres listesini sıfırla
+        }
+      } else {
+        this.addresses = []; // Posta kodu boşsa adres listesini sıfırla
+      }
+    },
     updateTimes() {
       if (this.appointment.date && this.selectedAddress) {
         this.calculateDistanceAndDuration(this.selectedAddress);
       }
     },
-
-    // Google Maps API kullanarak mesafe ve süre hesaplama
     async calculateDistanceAndDuration(destination) {
+      if (!destination || typeof destination.lat !== 'number' || typeof destination.lng !== 'number') {
+        console.error('Geçersiz konum bilgisi:', destination);
+        return;
+      }
+
       const service = new google.maps.DistanceMatrixService();
       service.getDistanceMatrix(
         {
           origins: [this.officeLocation],
-          destinations: [{ lat: destination.lat, lng: destination.lng }],
+          destinations: [{ lat: Number(destination.lat), lng: Number(destination.lng) }],
           travelMode: 'DRIVING',
         },
         (response, status) => {
@@ -125,8 +240,6 @@ export default {
         }
       );
     },
-
-    // Tahmini çıkış ve müsait olacağı zamanı hesapla
     calculateTimes(durationInSeconds) {
       const appointmentTime = new Date(this.appointment.date);
       if (isNaN(appointmentTime)) {
@@ -134,21 +247,24 @@ export default {
         return;
       }
       
-      // Randevu süresi: 1 saat
       const appointmentDurationInSeconds = 3600; // 1 saat = 3600 saniye
 
-      // Ofisten çıkış zamanı (randevu yerine ulaşmak için)
       const departureTime = new Date(appointmentTime.getTime() - durationInSeconds * 1000);
       this.estimatedDepartureTime = departureTime.toLocaleTimeString();
 
-      // Randevudan sonra dönüş zamanı
       const returnTime = new Date(appointmentTime.getTime() + (appointmentDurationInSeconds + durationInSeconds) * 1000);
       this.estimatedAvailableTime = returnTime.toLocaleTimeString();
     },
-
-    // Randevu oluşturmak için form verilerini gönderme
     async submitForm() {
+      console.log(this.appointment.address);  // Debug: Adres kontrolü
+      console.log(this.appointment.postcode); // Debug: Posta kodu kontrolü
+
       try {
+        if (!this.selectedAddress || typeof this.selectedAddress.lat !== 'number' || typeof this.selectedAddress.lng !== 'number') {
+          alert('Lütfen geçerli bir adres seçin.');
+          return;
+        }
+        
         const response = await axios.post('http://localhost:8000/api/appointments', {
           postcode: this.appointment.postcode,
           appointment_date: this.appointment.date,
@@ -156,19 +272,19 @@ export default {
           client_email: this.appointment.client.email,
           client_phone: this.appointment.client.phone,
           employee_id: this.appointment.employee.id,
-          location_lat: this.selectedAddress.lat,
-          location_lng: this.selectedAddress.lng,
+          location_lat: this.selectedAddress.lat, 
+          location_lng: this.selectedAddress.lng, 
           distance: this.distance,
           duration: this.travelDuration,
-          departure_time: this.estimatedDepartureTime, // Ofisten çıkış zamanı gönderiliyor
-          available_time: this.estimatedAvailableTime, // Müsait olacağı zaman gönderiliyor
+          departure_time: this.estimatedDepartureTime, 
+          available_time: this.estimatedAvailableTime, 
+          address: this.appointment.address, 
         }, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
 
-        console.log('Randevu başarıyla oluşturuldu:', response.data);
         alert('Randevu başarıyla oluşturuldu!');
       } catch (error) {
         if (error.response && error.response.data) {
@@ -180,11 +296,10 @@ export default {
         }
       }
     },
-
     // Çalışanları API'den çeker
     async fetchEmployees() {
       try {
-        const response = await axios.get('http://localhost:8000/api/employees', { // employees endpoint'ini kullan
+        const response = await axios.get('http://localhost:8000/api/employees', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -203,7 +318,7 @@ export default {
 
 <style scoped>
 .appointment-form {
-  width: 70%;
+  width: 90%;
   margin: auto;
   padding: 20px;
   background-color: #ecf0f1;
@@ -219,7 +334,12 @@ export default {
   font-size: 28px;
   margin-bottom: 20px;
 }
-
+.appointment-form form button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  color: #fff;
+  opacity: 0.6;
+}
 .appointment-form form {
   background: #ffffff;
   padding: 20px;
@@ -263,7 +383,6 @@ export default {
   background-color: #2980b9;
 }
 
-/* Mobil uyum için düzen */
 @media (max-width: 768px) {
   .appointment-form {
     margin-left: 0;

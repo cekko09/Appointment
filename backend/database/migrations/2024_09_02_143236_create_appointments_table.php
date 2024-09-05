@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->string('postcode');  // Randevu adresi posta kodu
+            $table->string('postcode')->nullable();  // Randevu adresi posta kodu
             $table->datetime('appointment_date');  // Randevu tarihi
             $table->string('client_name');  // Müşteri adı
             $table->string('client_email');  // Müşteri email

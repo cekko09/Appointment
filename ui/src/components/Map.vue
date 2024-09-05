@@ -6,6 +6,7 @@
 </template>
 
 <script>
+import {toRaw} from 'vue';
 export default {
   name: 'Map',
   props: {
@@ -33,7 +34,7 @@ export default {
   methods: {
     loadMapScript() {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAunuRDlZ1mHwkhG0a_9YoEIfyScIQC5jo&libraries=places`;
+      script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAunuRDlZ1mHwkhG0a_9YoEIfyScIQC5jo&libraries=places";
       script.async = true;
       script.defer = true;
       script.onload = this.initMap;
@@ -47,7 +48,10 @@ export default {
       this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
       this.directionsService = new google.maps.DirectionsService();
-      this.directionsRenderer = new google.maps.DirectionsRenderer();
+      this.directionsRenderer = new google.maps.DirectionsRenderer({
+        map: this.map,
+        suppressMarkers: true,  // Varsayılan işaretçiyi devre dışı bırak
+      });
       this.directionsRenderer.setMap(this.map);
 
       this.map.addListener('click', (event) => {
@@ -56,7 +60,7 @@ export default {
     },
     placeMarker(location) {
       // Önceki tüm işaretçileri kaldır
-      this.markers.forEach(marker => marker.setMap(null));
+      this.markers.map((marker) => toRaw(marker).setMap(null))
       this.markers = [];
 
       // Yeni işaretçiyi oluştur ve haritaya ekle
@@ -103,6 +107,25 @@ export default {
         }
       });
     },
+    setMarker(lat, lng) {
+      // Dışarıdan adres seçildiğinde bu fonksiyonu çağırarak haritada marker yerleştirebilirsiniz
+      this.markers.map((marker) => toRaw(marker).setMap(null))
+      this.markers = [];
+
+      const location = { lat, lng };
+
+      // Yeni işaretçiyi oluştur ve haritaya ekle
+      const newMarker = new google.maps.Marker({
+        position: location,
+        map: this.map,
+        draggable: true,
+      });
+
+      this.markers.push(newMarker);
+      this.map.setCenter(location); // Haritayı merkezle
+
+      this.calculateRoute(location); // Yol güzergahını güncelle
+    }
   },
 };
 </script>
