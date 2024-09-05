@@ -195,10 +195,10 @@ export default {
 <style scoped>
 /* Genel stiller */
 .appointment-list-container {
-  width: 80%;
-  right: 10px;
-  padding: 20px;
+  width: 60%;
   position: absolute;
+  right: 5%;
+  padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;

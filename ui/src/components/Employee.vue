@@ -1,4 +1,5 @@
 <template>
+  <div class="employee-container">
     <div class="employee-list-container">
       <h2>Çalışanlar Listesi</h2>
       <ul class="employee-list">
@@ -31,6 +32,7 @@
         Yükleniyor...
       </div>
     </div>
+  </div>
   </template>
   
   <script>
@@ -198,6 +200,11 @@ const updateEmployee = async () => {
   </script>
   
   <style scoped>
+  .employee-container{
+    width: 80%;
+  position: absolute;
+  right: 5%;
+  }
   .employee-list-container {
     width: 50%;
     margin: 50px auto;
@@ -207,6 +214,7 @@ const updateEmployee = async () => {
     background-color: #f9f9f9;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: relative;
+
   }
   
   .employee-list {
@@ -318,7 +326,7 @@ const updateEmployee = async () => {
   /* For devices with a width up to 768px */
   @media (max-width: 767px) {
     .employee-list-container {
-      width: 90%;
+      width: 80%;
     right: 30px;
     position: absolute;
     }
@@ -340,8 +348,8 @@ const updateEmployee = async () => {
   /* For devices with a width up to 480px */
   @media (max-width: 480px) {
     .employee-list-container {
-      width: 80%;
-    right: 10px;
+      width: 100%;
+    right: 0px;
     position: absolute;
       padding: 10px;
     }

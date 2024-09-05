@@ -77,6 +77,9 @@ export default {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
+  width: 65%;
+  position: absolute;
+  right: 5%;
 }
 
 .employee-form h2 {
@@ -121,7 +124,11 @@ export default {
 .employee-form button:hover:not([disabled]) {
   background-color: #0069d9;
 }
-
+@media (max-width: 930px) {
+  .employee-form {
+  right: 2%;
+}
+}
 /* Mobil cihazlar (768px altı) için stil */
 @media (max-width: 768px) {
   .employee-form {
