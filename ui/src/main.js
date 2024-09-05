@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { createPinia } from 'pinia'; 
 
+
 axios.defaults.baseURL = 'http://localhost:8000/api';
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('token');

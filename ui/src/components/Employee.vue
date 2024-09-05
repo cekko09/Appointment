@@ -12,13 +12,28 @@
       <!-- Düzenleme Formu -->
       <div v-if="selectedEmployee" class="edit-form-container">
         <h3>Çalışanı Düzenle</h3>
-        <form @submit.prevent="updateEmployee" class="employee-form">
-          <input v-model="selectedEmployee.first_name" type="text" placeholder="Adı" required />
-          <input v-model="selectedEmployee.last_name" type="text" placeholder="Soyadı" required />
-          <input v-model="selectedEmployee.user.email" type="email" placeholder="E-posta" required />
-          <button type="submit" class="submit-button">Kaydet</button>
+        <Form @submit="updateEmployee" v-slot="{  meta }">
+        <div class="employee-form">
+          <Field name="first_name" rules="required" v-model="selectedEmployee.first_name" v-slot="{ field, errors, meta }">
+            <input v-bind="field" type="text" placeholder="Adı" :class="{ touched: meta.touched && errors.length }" />
+            <span v-if="errors[0]">{{ errors[0] }}</span>
+          </Field>
+
+          <Field name="last_name" rules="required" v-model="selectedEmployee.last_name" v-slot="{ field, errors, meta }">
+            <input v-bind="field" type="text" placeholder="Soyadı" :class="{ touched: meta.touched && errors.length }" />
+            <span v-if="errors[0]">{{ errors[0] }}</span>
+          </Field>
+
+          <Field name="email" rules="required|email" v-model="selectedEmployee.user.email" v-slot="{ field, errors, meta }">
+            <input v-bind="field" type="email" placeholder="E-posta" :class="{ touched: meta.touched && errors.length }" />
+            <span v-if="errors[0]">{{ errors[0] }}</span>
+          </Field>
+
+          <!-- Kaydet Butonu Yalnızca Alanlar Değiştiğinde Aktif -->
+          <button type="submit" class="submit-button" :disabled="!meta.dirty">Kaydet</button>
           <button @click="cancelEdit" type="button" class="cancel-button">İptal</button>
-        </form>
+        </div>
+      </Form>
       </div>
   
       <!-- Geri Bildirim Mesajları -->
@@ -37,9 +52,18 @@
   import axios from 'axios';
   import { ref, onMounted } from 'vue';
   import Swal from 'sweetalert2';
+  import { Form, Field, defineRule } from 'vee-validate';
+import { required, email } from '@vee-validate/rules';
 
-  
-  export default {
+// Vee-validate kuralları tanımlama
+defineRule('required', required);
+defineRule('email', email);
+
+export default {
+  components: {
+    Form,
+    Field,
+  },
     setup() {
       const employees = ref([]);
       const selectedEmployee = ref(null);
@@ -178,13 +202,22 @@ const updateEmployee = async () => {
       confirmButtonText: 'Tamam',
     });
   } catch (error) {
+    if (error.response.data.errors.email) {
+        // E-posta adresi zaten kayıtlı ise
+        Swal.fire({
+          title: 'Hata!',
+          text: 'Bu e-posta adresi zaten kayıtlı.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
+      }
     // SweetAlert2 ile hata mesajı gösterme
-    await Swal.fire({
+   else { await Swal.fire({
       title: 'Hata!',
       text: 'Çalışan güncellenemedi. Lütfen tekrar deneyin.',
       icon: 'error',
       confirmButtonText: 'Tamam',
-    });
+    });}
   } finally {
     loading.value = false;
   }
@@ -312,7 +345,10 @@ const updateEmployee = async () => {
     color: blue;
     margin-top: 20px;
   }
-  
+  .employee-form button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
   /* Media Queries for Responsive Design */
   
   /* For devices with a width up to 768px */
