@@ -57,7 +57,12 @@ export default {
         alert('Çalışan başarıyla eklendi!');
         this.$router.push('/employees');
       } catch (error) {
-        alert('Çalışan eklenemedi. Lütfen bilgileri kontrol edin.');
+        this.$swal.fire({
+          title: 'Hata!',
+          text: 'Çalışan Eklenemedi Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Devam et'
+        });
       }
     },
   },

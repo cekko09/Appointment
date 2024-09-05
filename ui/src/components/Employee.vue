@@ -96,7 +96,9 @@
     employees.value = employees.value.filter(employee => employee.id !== id);
 
     // Başarı mesajı
-    this.$swal.fire({
+    console.log('BASARİ');
+    
+    Swal.fire({
       title: 'Başarılı!',
       text: 'Çalışan başarıyla silindi.',
       icon: 'success',
@@ -104,7 +106,7 @@
     });
   } catch (error) {
     // Hata mesajı
-    this.$swal.fire({
+    Swal.fire({
       title: 'Hata!',
       text: 'Çalışan silinemedi. Lütfen tekrar deneyin.',
       icon: 'error',
