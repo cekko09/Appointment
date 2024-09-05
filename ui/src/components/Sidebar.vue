@@ -4,7 +4,7 @@
       <h1>Iceberg Estates</h1>
     </div>
     <div class="user_info">
-      <h2 v-if="userName">{{ userName }}</h2> <!-- Kullanıcının adını göster -->
+      <h2 v-if="userName">{{ userName + ' ,' + userRole }}</h2> <!-- Kullanıcının adını göster -->
       <h6 v-else>Kullanıcı Bilgileri Yükleniyor...</h6>
     </div>
     <nav>
@@ -18,8 +18,8 @@
         <li>
           <router-link to="/appointments/new">Randevu Oluştur</router-link>
         </li>
-        <li><router-link to="/add-employee">Çalışan Ekle</router-link></li>
-        <li><router-link to="/employees">Çalışanlar</router-link></li>
+        <li v-show="userRole == 'admin'"><router-link to="/add-employee">Çalışan Ekle</router-link></li>
+        <li v-show="userRole == 'admin'"><router-link to="/employees">Çalışanlar</router-link></li>
         <li>
           <button @click="logout">Logout</button>
         </li>
@@ -48,6 +48,9 @@ export default {
     userName() {
       return this.userStore.userName;
     },
+    userRole( ) {
+      return this.userStore.userRole;
+    }
   },
   created() {
     this.userStore.fetchUser();

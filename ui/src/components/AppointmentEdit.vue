@@ -60,7 +60,7 @@
       <p>Randevudan Sonra Müsait Olacağı Zaman: {{ appointment.available_time }}</p>
 
       <!-- Randevu Güncelleme Butonu -->
-      <button :disabled="!isFormValid" type="submit">Randevuyu Güncelle</button>
+      <button :disabled="!isFormDirty" type="submit">Randevuyu Güncelle</button>
     </form>
   </div>
 </template>
@@ -95,10 +95,15 @@ export default {
       addresses: [],
       selectedAddress: null,
       officeLocation: { lat: 51.5074, lng: -0.1278 }, // Ofis konumu örneği
-      addressSelectedFromMap: false
+      addressSelectedFromMap: false,
+      originalAppointment: {}
     };
   },
-  
+  created() {
+    this.fetchEmployees();
+    this.fetchAppointment();
+    this.selectAddress = this.appointment.address;
+  },
   watch: {
     'appointment.postcode': function(newVal) {
       if (!newVal) {
@@ -108,65 +113,72 @@ export default {
     }
   },
   computed: {
-    isFormValid() {
-      return (
-        this.appointment.appointment_date &&
-        this.appointment.client_name &&
-        this.appointment.client_email &&
-        this.appointment.client_phone &&
-        this.appointment.employee_id &&
-        this.appointment.address
-      );
+    isFormDirty() {
+      // Formdaki herhangi bir alan değişmişse 'true' döner, aksi takdirde 'false'
+      return JSON.stringify(this.appointment) !== JSON.stringify(this.originalAppointment);
     }
   },
   methods: {
     async fetchAppointment() {
-      const route = this.$route;
-      try {
-        const response = await axios.get(`http://localhost:8000/api/appointments/${route.params.id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        this.appointment = response.data;
-        console.log(this.appointment);
+  const route = this.$route;
+  try {
+    const response = await axios.get(`http://localhost:8000/api/appointments/${route.params.id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    this.appointment = response.data;
+    this.originalAppointment = JSON.parse(JSON.stringify(response.data));
+
+    // Mevcut konum ayarlaması
+    if (this.appointment.location_lat && this.appointment.location_lng &&
+        !isNaN(this.appointment.location_lat) && !isNaN(this.appointment.location_lng)) {
+      this.selectedAddress = { lat: this.appointment.location_lat, lng: this.appointment.location_lng };
+      if (this.$refs.mapComponent && this.$refs.mapComponent.setMarker) {
+        this.$refs.mapComponent.setMarker( Number(this.appointment.location_lat),  Number(this.appointment.location_lng));
+        console.log("Type of location_lat:", typeof this.appointment.location_lat);
         
-        this.selectedAddress = { lat: this.appointment.location_lat, lng: this.appointment.location_lng }; // Mevcut konum ayarlaması
-        this.updateTimes(); // Mevcut veriye göre mesafe ve süreyi hesapla
-        console.log(this.selectedAddress);
-        
-      } catch (error) {
-        console.error('Randevu verisi yüklenemedi:', error);
       }
-    },
-    handleAddressChange() {
-      this.selectAddress();  // İlk metodu çağır
-      this.updateTimes();  // İkinci metodu çağır
-    },
-    selectAddress() {
-      const selected = this.appointment.address;
-      if (selected) {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: selected }, (results, status) => {
-          if (status === 'OK' && results[0]) {
-            const location = results[0].geometry.location;
-            const lat = location.lat();
-            const lng = location.lng();
+    } else {
+      console.error('Geçersiz konum bilgisi:',   intoString(this.appointment.location_lat), this.appointment.location_lng);
+    }
 
-            if (this.$refs.mapComponent && this.$refs.mapComponent.setMarker) {
-              this.$refs.mapComponent.setMarker(lat, lng);
-            }
+    this.updateTimes(); // Mevcut veriye göre mesafe ve süreyi hesapla
+  } catch (error) {
+    console.error('Randevu verisi yüklenemedi:', error);
+  }
+},
 
-            this.selectedAddress = { lat, lng };
-            this.calculateDistanceAndDuration(this.selectedAddress);
-          } else {
-            console.error('Adres geocode edilmedi:', status);
+  
+  handleAddressChange() {
+    this.selectAddress();  // İlk metodu çağır
+    this.updateTimes();  // İkinci metodu çağır
+  },
+
+  selectAddress() {
+    const selected = this.appointment.address;
+    if (selected) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: selected }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const location = results[0].geometry.location;
+          const lat = location.lat();
+          const lng = location.lng();
+
+          if (this.$refs.mapComponent && this.$refs.mapComponent.setMarker) {
+            this.$refs.mapComponent.setMarker(lat, lng); // Marker'ı haritaya yerleştir
           }
-        });
-      } else {
-        console.error("Geçersiz adres veya konum bilgisi.");
-      }
-    },
+
+          this.selectedAddress = { lat, lng };
+          this.calculateDistanceAndDuration(this.selectedAddress);
+        } else {
+          console.error('Adres geocode edilmedi:', status);
+        }
+      });
+    } else {
+      console.error("Geçersiz adres veya konum bilgisi.");
+    }
+  },
     onAddressSelected(location) {
       if (location && location.lat && location.lng) {
         this.selectedAddress = location;
@@ -337,11 +349,7 @@ export default {
       }
     },
   },
-  created() {
-    this.fetchEmployees();
-    this.fetchAppointment();
-    this.selectAddress = this.appointment.address;
-  },
+
 };
 </script>
 
