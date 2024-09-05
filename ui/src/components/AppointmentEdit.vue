@@ -1,106 +1,126 @@
 <template>
   <div class="appointment-form">
     <h2>Randevu Düzenle</h2>
-    <Form @submit="updateAppointment" :validation-schema="validationSchema">
+    <form @submit.prevent="updateAppointment">
+      <!-- Randevu Adresi Posta Kodu -->
       <div>
         <label for="postcode">Randevu Adresi Posta Kodu:</label>
-        <Field v-model="appointment.postcode" name="postcode" id="postcode" />
-        <ErrorMessage name="postcode" />
+        <input v-model="appointment.postcode" id="postcode" @input="fetchPostcodeDetails" />
       </div>
 
+      <!-- Adres Input veya Selectbox -->
       <div v-if="addresses.length === 0">
         <label for="address">Randevu Adresi:</label>
-        <Field v-model="appointment.address" name="address" id="address" readonly />
-        <ErrorMessage name="address" />
+        <input v-model="appointment.address" id="address" readonly />
       </div>
       <div v-else-if="addresses.length > 0 && appointment.postcode && !addressSelectedFromMap">
         <label for="address-select">Adres Seç:</label>
-        <Field as="select" v-model="appointment.address" name="address">
+        <select v-model="appointment.address" id="address-select" @change="handleAddressChange">
           <option v-for="(address, index) in addresses" :key="index" :value="address">{{ address }}</option>
-        </Field>
-        <ErrorMessage name="address" />
+        </select>
       </div>
 
+      <!-- Randevu Tarihi -->
       <div>
         <label for="date">Randevu Tarihi:</label>
-        <Field type="datetime-local" v-model="appointment.appointment_date" name="appointment_date" id="date" />
-        <ErrorMessage name="appointment_date" />
+        <input type="datetime-local" v-model="appointment.appointment_date" @change="updateTimes" id="date" required />
       </div>
 
+      <!-- Müşteri Bilgileri -->
       <div>
         <label for="client-name">Müşteri Adı:</label>
-        <Field v-model="appointment.client_name" name="client_name" id="client-name" />
-        <ErrorMessage name="client_name" />
+        <input v-model="appointment.client_name" id="client-name" required />
       </div>
       <div>
         <label for="client-email">Müşteri Email:</label>
-        <Field v-model="appointment.client_email" name="client_email" id="client-email" />
-        <ErrorMessage name="client_email" />
+        <input v-model="appointment.client_email" id="client-email" required />
       </div>
       <div>
         <label for="client-phone">Müşteri Telefon:</label>
-        <Field v-model="appointment.client_phone" name="client_phone" id="client-phone" />
-        <ErrorMessage name="client_phone" />
+        <input v-model="appointment.client_phone" id="client-phone" required />
       </div>
 
+      <!-- Emlakçı Çalışanı Seçimi -->
       <div>
         <label for="employee">Emlakçı Çalışanı:</label>
-        <Field as="select" v-model="appointment.employee_id" name="employee_id" id="employee">
+        <select v-model="appointment.employee_id" id="employee" required>
           <option v-for="employee in employees" :key="employee.id" :value="employee.id">
             {{ employee.first_name }} {{ employee.last_name }}
           </option>
-        </Field>
-        <ErrorMessage name="employee_id" />
+        </select>
       </div>
 
+      <!-- Harita Bileşeni -->
       <Map ref="mapComponent" @addressSelected="onAddressSelected" />
 
+      <!-- Mesafe ve Süre Bilgileri -->
       <p>Ofis ile randevu adresi arası mesafe: {{ appointment.distance }} km</p>
-      <p>Tahmini Seyahat Süresi: {{ appointment.duration }}</p>
+      <p>Tahmini Seyahat Süresi: {{ appointment.duration }} </p>
       <p>Ofisten Çıkış Zamanı: {{ appointment.departure_time }}</p>
       <p>Randevudan Sonra Müsait Olacağı Zaman: {{ appointment.available_time }}</p>
 
+      <!-- Randevu Güncelleme Butonu -->
       <button :disabled="!isFormValid" type="submit">Randevuyu Güncelle</button>
-    </Form>
+    </form>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue';
-import { useForm, Field, Form, ErrorMessage } from 'vee-validate';
-import { validationSchema } from '@/validations/validationSchema';
 import Map from './Map.vue';
 import axios from 'axios';
 
-export default defineComponent({
-  name: 'AppointmentEdit',
-  components: { Map },
-  setup() {
-    const { resetForm, handleSubmit, errors, values, setValues, setFieldValue, validateForm } = useForm({
-      validationSchema,
-    });
-
-    const appointment = ref({
-      postcode: '',
-      appointment_date: '',
-      client_name: '',
-      client_email: '',
-      client_phone: '',
-      employee_id: null,
-      address: '',
-      location_lat: null,
-      location_lng: null,
-      distance: '0',
-      duration: '0',
-      departure_time: '',
-      available_time: '',
-    });
-
-    const employees = ref([]);
-    const addresses = ref([]);
-    const addressSelectedFromMap = ref(false);
-
-    const fetchAppointment = async () => {
+export default {
+  name: 'EditAppointment',
+  components: {
+    Map,
+  },
+  data() {
+    return {
+      appointment: {
+        postcode: '',
+        appointment_date: '',
+        client_name: '',
+        client_email: '',
+        client_phone: '',
+        employee_id: null,
+        address: '',
+        location_lat: null,
+        location_lng: null,
+        distance: '0',
+        duration: '0',
+        departure_time: '',
+        available_time: ''
+      },
+      employees: [],
+      addresses: [],
+      selectedAddress: null,
+      officeLocation: { lat: 51.5074, lng: -0.1278 }, // Ofis konumu örneği
+      addressSelectedFromMap: false
+    };
+  },
+  
+  watch: {
+    'appointment.postcode': function(newVal) {
+      if (!newVal) {
+        this.appointment.address = ''; // Posta kodu silindiğinde adresi sıfırlayın
+        this.addressSelectedFromMap = false;
+      }
+    }
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.appointment.appointment_date &&
+        this.appointment.client_name &&
+        this.appointment.client_email &&
+        this.appointment.client_phone &&
+        this.appointment.employee_id &&
+        this.appointment.address
+      );
+    }
+  },
+  methods: {
+    async fetchAppointment() {
       const route = this.$route;
       try {
         const response = await axios.get(`http://localhost:8000/api/appointments/${route.params.id}`, {
@@ -108,75 +128,222 @@ export default defineComponent({
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        setValues(response.data);
-        // Diğer işlemler
+        this.appointment = response.data;
+        console.log(this.appointment);
+        
+        this.selectedAddress = { lat: this.appointment.location_lat, lng: this.appointment.location_lng }; // Mevcut konum ayarlaması
+        this.updateTimes(); // Mevcut veriye göre mesafe ve süreyi hesapla
+        console.log(this.selectedAddress);
+        
       } catch (error) {
         console.error('Randevu verisi yüklenemedi:', error);
       }
-    };
+    },
+    handleAddressChange() {
+      this.selectAddress();  // İlk metodu çağır
+      this.updateTimes();  // İkinci metodu çağır
+    },
+    selectAddress() {
+      const selected = this.appointment.address;
+      if (selected) {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: selected }, (results, status) => {
+          if (status === 'OK' && results[0]) {
+            const location = results[0].geometry.location;
+            const lat = location.lat();
+            const lng = location.lng();
 
-    const fetchEmployees = async () => {
+            if (this.$refs.mapComponent && this.$refs.mapComponent.setMarker) {
+              this.$refs.mapComponent.setMarker(lat, lng);
+            }
+
+            this.selectedAddress = { lat, lng };
+            this.calculateDistanceAndDuration(this.selectedAddress);
+          } else {
+            console.error('Adres geocode edilmedi:', status);
+          }
+        });
+      } else {
+        console.error("Geçersiz adres veya konum bilgisi.");
+      }
+    },
+    onAddressSelected(location) {
+      if (location && location.lat && location.lng) {
+        this.selectedAddress = location;
+        this.appointment.address = location.formatted_address; // Adres inputunu güncelle
+        this.calculateDistanceAndDuration(location);
+
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: location.lat, lng: location.lng } }, (results, status) => {
+          if (status === 'OK' && results[0]) {
+            const postcodeComponent = results[0].address_components.find(comp => comp.types.includes("postal_code"));
+            if (postcodeComponent) {
+              this.appointment.postcode = postcodeComponent.long_name; // Posta kodunu inputa yerleştirin
+              this.addressSelectedFromMap = true; // Adres haritadan seçildi
+            }
+          }
+        });
+      } else {
+        console.error('Geçersiz konum bilgisi alındı.');
+      }
+    },
+    async fetchPostcodeDetails() {
+      if (this.appointment.postcode) {
+        try {
+          const postcodeResponse = await axios.get(`http://localhost:8000/api/fetch-postcode-details/${this.appointment.postcode}`);
+          console.log('Postcode API Response:', postcodeResponse.data); // Debug için eklendi
+
+          if (postcodeResponse.data && postcodeResponse.data.result) {
+            const latitude = postcodeResponse.data.result.latitude;
+            const longitude = postcodeResponse.data.result.longitude;
+
+            const googleResponse = await axios.get(`http://localhost:8000/api/fetch-nearby-addresses`, {
+              params: {
+                lat: latitude,
+                lon: longitude
+              }
+            });
+
+            console.log('Google Maps API Response:', googleResponse.data); // Debug için eklendi
+
+            if (googleResponse.data && googleResponse.data.results) {
+              this.addresses = googleResponse.data.results.map(item => item.formatted_address);
+            } else {
+              this.addresses = [];
+              console.warn('Yakınlarda adres bulunamadı veya response formatı beklenen gibi değil.');
+            }
+          } else {
+            this.addresses = [];
+            console.warn('Postcode için sonuç bulunamadı.');
+          }
+        } catch (error) {
+          console.error('Adresler yüklenemedi:', error);
+          this.addresses = []; // Hata durumunda adres listesini sıfırla
+        }
+      } else {
+        this.addresses = []; // Posta kodu boşsa adres listesini sıfırla
+      }
+    },
+    updateTimes() {
+      if (this.appointment.appointment_date && this.selectedAddress) {
+        this.calculateDistanceAndDuration(this.selectedAddress);
+      }
+    },
+    async calculateDistanceAndDuration(destination) {
+    
+
+      const service = new google.maps.DistanceMatrixService();
+      service.getDistanceMatrix(
+        {
+          origins: [this.officeLocation],
+          destinations: [{            lat: Number(destination.lat), lng: Number(destination.lng) }],
+          travelMode: 'DRIVING',
+        },
+        (response, status) => {
+          if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+            this.appointment.distance = (response.rows[0].elements[0].distance.value / 1000).toFixed(2); // km
+            this.appointment.duration = response.rows[0].elements[0].duration.text; // sürüş süresi
+            this.calculateTimes(response.rows[0].elements[0].duration.value); // süreyi saniye cinsinden alır
+          } else {
+            console.error('Mesafe veya süre hesaplanamadı:', status);
+          }
+        }
+      );
+    },
+    calculateTimes(durationInSeconds) {
+      const appointmentTime = new Date(this.appointment.appointment_date);
+      if (isNaN(appointmentTime)) {
+        console.error('Randevu tarihi geçerli değil.');
+        return;
+      }
+
+      const appointmentDurationInSeconds = 3600; // 1 saat = 3600 saniye
+
+      // Ofisten çıkış zamanı
+      const departureTime = new Date(appointmentTime.getTime() - durationInSeconds * 1000);
+      this.appointment.departure_time = departureTime.toLocaleTimeString();
+
+      // Randevudan sonra dönüş zamanı
+      const returnTime = new Date(appointmentTime.getTime() + (appointmentDurationInSeconds + durationInSeconds) * 1000);
+      this.appointment.available_time = returnTime.toLocaleTimeString();
+    },
+    async updateAppointment() {
+      console.log(this.appointment.address);  // Debug: Adres kontrolü
+      console.log(this.appointment.postcode); // Debug: Posta kodu kontrolü
+
+      try {
+     
+        
+        const response = await axios.put(`http://localhost:8000/api/appointments/${this.appointment.id}`, {
+          postcode: this.appointment.postcode,
+          appointment_date: this.appointment.appointment_date,
+          client_name: this.appointment.client_name,
+          client_email: this.appointment.client_email,
+          client_phone: this.appointment.client_phone,
+          employee_id: this.appointment.employee_id,
+          location_lat: this.selectedAddress.lat, 
+          location_lng: this.selectedAddress.lng, 
+          distance: this.appointment.distance,
+          duration: this.appointment.duration,
+          departure_time: this.appointment.departure_time, 
+          available_time: this.appointment.available_time, 
+          address: this.appointment.address, 
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        this.$swal.fire({
+          title: 'Başarılı!',
+          text: 'Randevu Başarıyla Güncellendi.',
+          icon: 'success',
+          confirmButtonText: 'Devam et'
+        }).then(() => {
+          this.$router.push('/appointments'); 
+        });
+        this.$router.push('/appointments');
+      } catch (error) {
+        if (error.response && error.response.data) {
+          console.error('Backend Hatası:', error.response.data);
+          this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu  Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
+        } else {
+          console.error('Randevu güncellenemedi:', error);
+          this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
+        }
+      }
+    },
+    // Çalışanları API'den çek
+    async fetchEmployees() {
       try {
         const response = await axios.get('http://localhost:8000/api/employees', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        employees.value = response.data;
+        this.employees = response.data;
       } catch (error) {
         console.error('Çalışanlar yüklenemedi:', error);
       }
-    };
-
-    const updateAppointment = handleSubmit(async () => {
-      try {
-        const route = this.$route;
-        await axios.put(`http://localhost:8000/api/appointments/${route.params.id}`, values, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        alert('Randevu başarıyla güncellendi.');
-        this.$router.push('/appointments');
-      } catch (error) {
-        console.error('Randevu güncellenirken hata oluştu:', error);
-        alert('Randevu güncellenemedi. Lütfen tekrar deneyin.');
-      }
-    });
-
-    onMounted(() => {
-      fetchAppointment();
-      fetchEmployees();
-    });
-
-    return {
-      appointment,
-      employees,
-      addresses,
-      addressSelectedFromMap,
-      validationSchema,
-      updateAppointment,
-      errors,
-      values,
-      setValues,
-      setFieldValue,
-      validateForm,
-    };
-  },
-  methods: {
-    onSubmit(values) {
-      console.log('Form submitted with:', values);
-      // Randevuyu güncelleme işlemi burada yapılacak.
     },
   },
   created() {
     this.fetchEmployees();
+    this.fetchAppointment();
+    this.selectAddress = this.appointment.address;
   },
-});
+};
 </script>
-
-
-
 
 <style scoped>
 .appointment-form {
