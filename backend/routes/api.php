@@ -51,7 +51,7 @@ Route::get('/fetch-nearby-addresses', function (Request $request) {
 
     try {
         // Google Geocoding API'sine istek gönderiyoruz
-        $apiKey = "AIzaSyBK1XtJlrLVOujmrk5tNW4IoFWyrycy6G0"; // Google API anahtarınızı .env dosyasından alın
+        $apiKey = ""; // Google API anahtarınızı .env dosyasından alın
         $googleApiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng={$latitude},{$longitude}&key={$apiKey}";
 
         $response = Http::get($googleApiUrl);
