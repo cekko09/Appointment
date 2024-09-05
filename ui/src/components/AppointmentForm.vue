@@ -413,7 +413,9 @@ async fetchPostcodeDetails() {
 
 <style scoped>
 .appointment-form {
-  width: 90%;
+  width: 60%;
+  position: absolute;
+  right: 5%;
   margin: 20px auto;
   padding: 20px;
   border-radius: 5px;

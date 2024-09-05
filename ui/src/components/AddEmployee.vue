@@ -119,6 +119,9 @@ export default {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
+  width: 65%;
+  position: absolute;
+  right: 5%;
 }
 
 .employee-form h2 {

@@ -427,7 +427,9 @@ export default {
 <style scoped>
 .appointment-form {
   margin: 20px auto;
-  width: 90%;
+  width: 60%;
+  position: absolute;
+  right: 5%;
   padding: 20px;
   background-color: #ecf0f1;
   min-height: 100vh;
