@@ -24,7 +24,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser']);
 
-   
+Route::get('employees/{employeeId}/appointments', [EmployeeController::class, 'getAppointments']);
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');

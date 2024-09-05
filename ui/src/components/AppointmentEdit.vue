@@ -16,10 +16,12 @@
       <div v-else-if="addresses.length > 0 && appointment.postcode && !addressSelectedFromMap">
         <label for="address-select">Adres Seç:</label>
         <select v-model="appointment.address" id="address-select" @change="handleAddressChange">
+          <option value="" disabled selected>Lütfen Adres Seçiniz</option>
           <option v-for="(address, index) in addresses" :key="index" :value="address">{{ address }}</option>
         </select>
       </div>
-
+<!-- Adresler yüklenirken gösterilecek loader -->
+<div v-if="loadingAddresses" class="loader">Adresler Yükleniyor...</div>
       <!-- Randevu Tarihi -->
       <div>
         <label for="date">Randevu Tarihi:</label>
@@ -96,7 +98,8 @@ export default {
       selectedAddress: null,
       officeLocation: { lat: 51.5074, lng: -0.1278 }, // Ofis konumu örneği
       addressSelectedFromMap: false,
-      originalAppointment: {}
+      originalAppointment: {},
+      loadingAddresses: false,
     };
   },
   created() {
@@ -200,42 +203,45 @@ export default {
       }
     },
     async fetchPostcodeDetails() {
-      if (this.appointment.postcode) {
-        try {
-          const postcodeResponse = await axios.get(`http://localhost:8000/api/fetch-postcode-details/${this.appointment.postcode}`);
-          console.log('Postcode API Response:', postcodeResponse.data); // Debug için eklendi
+  if (this.appointment.postcode) {
+    this.loadingAddresses = true;  // Adres yüklemesi başladığında loader'ı göster
+    try {
+      const postcodeResponse = await axios.get(`http://localhost:8000/api/fetch-postcode-details/${this.appointment.postcode}`);
+      console.log('Postcode API Response:', postcodeResponse.data); // Debug için eklendi
 
-          if (postcodeResponse.data && postcodeResponse.data.result) {
-            const latitude = postcodeResponse.data.result.latitude;
-            const longitude = postcodeResponse.data.result.longitude;
+      if (postcodeResponse.data && postcodeResponse.data.result) {
+        const latitude = postcodeResponse.data.result.latitude;
+        const longitude = postcodeResponse.data.result.longitude;
 
-            const googleResponse = await axios.get(`http://localhost:8000/api/fetch-nearby-addresses`, {
-              params: {
-                lat: latitude,
-                lon: longitude
-              }
-            });
-
-            console.log('Google Maps API Response:', googleResponse.data); // Debug için eklendi
-
-            if (googleResponse.data && googleResponse.data.results) {
-              this.addresses = googleResponse.data.results.map(item => item.formatted_address);
-            } else {
-              this.addresses = [];
-              console.warn('Yakınlarda adres bulunamadı veya response formatı beklenen gibi değil.');
-            }
-          } else {
-            this.addresses = [];
-            console.warn('Postcode için sonuç bulunamadı.');
+        const googleResponse = await axios.get(`http://localhost:8000/api/fetch-nearby-addresses`, {
+          params: {
+            lat: latitude,
+            lon: longitude
           }
-        } catch (error) {
-          console.error('Adresler yüklenemedi:', error);
-          this.addresses = []; // Hata durumunda adres listesini sıfırla
+        });
+
+        console.log('Google Maps API Response:', googleResponse.data); // Debug için eklendi
+
+        if (googleResponse.data && googleResponse.data.results) {
+          this.addresses = googleResponse.data.results.map(item => item.formatted_address);
+        } else {
+          this.addresses = [];
+          console.warn('Yakınlarda adres bulunamadı veya response formatı beklenen gibi değil.');
         }
       } else {
-        this.addresses = []; // Posta kodu boşsa adres listesini sıfırla
+        this.addresses = [];
+        console.warn('Postcode için sonuç bulunamadı.');
       }
-    },
+    } catch (error) {
+      console.error('Adresler yüklenemedi:', error);
+      this.addresses = []; // Hata durumunda adres listesini sıfırla
+    } finally {
+      this.loadingAddresses = false;  // Adres yüklemesi tamamlandığında loader'ı gizle
+    }
+  } else {
+    this.addresses = []; // Posta kodu boşsa adres listesini sıfırla
+  }
+},
     updateTimes() {
       if (this.appointment.appointment_date && this.selectedAddress) {
         this.calculateDistanceAndDuration(this.selectedAddress);
@@ -279,62 +285,127 @@ export default {
       const returnTime = new Date(appointmentTime.getTime() + (appointmentDurationInSeconds + durationInSeconds) * 1000);
       this.appointment.available_time = returnTime.toLocaleTimeString();
     },
-    async updateAppointment() {
-      console.log(this.appointment.address);  // Debug: Adres kontrolü
-      console.log(this.appointment.postcode); // Debug: Posta kodu kontrolü
+    async checkAppointmentOverlap() {
+    const appointments = await this.fetchEmployeeAppointments(this.appointment.employee_id);
 
-      try {
-     
-        
-        const response = await axios.put(`http://localhost:8000/api/appointments/${this.appointment.id}`, {
-          postcode: this.appointment.postcode,
-          appointment_date: this.appointment.appointment_date,
-          client_name: this.appointment.client_name,
-          client_email: this.appointment.client_email,
-          client_phone: this.appointment.client_phone,
-          employee_id: this.appointment.employee_id,
-          location_lat: this.selectedAddress.lat, 
-          location_lng: this.selectedAddress.lng, 
-          distance: this.appointment.distance,
-          duration: this.appointment.duration,
-          departure_time: this.appointment.departure_time, 
-          available_time: this.appointment.available_time, 
-          address: this.appointment.address, 
-        }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+    const newStartDate = this.appointment.appointment_date.split("T")[0]; // Tarih kısmını al
+    const newStartDateTime = new Date(newStartDate + " " + this.appointment.departure_time); // Yeni randevu başlangıç tarihi ve saati
+    const newEndDateTime = new Date(newStartDate + " " + this.appointment.available_time); // Yeni randevu bitiş tarihi ve saati
+
+    for (let appt of appointments) {
+      // Düzenlenen randevu kendi randevusu ise çakışma kontrolü yapma
+      if (appt.id === this.appointment.id) continue;
+      
+      const existingDate = appt.appointment_date.split(" ")[0]; // Var olan randevunun tarih kısmını al
+      const existingStartTime = new Date(existingDate + " " + appt.departure_time); // Mevcut randevu başlangıç tarihi ve saati
+      const existingEndTime = new Date(existingDate + " " + appt.available_time); // Mevcut randevu bitiş tarihi ve saati
+
+      // Aynı tarihte mi diye kontrol et
+      if (newStartDate === existingDate) {
+        // Tarih ve saat karşılaştırmaları
+        if (
+          (newStartDateTime >= existingStartTime && newStartDateTime < existingEndTime) ||
+          (newEndDateTime > existingStartTime && newEndDateTime <= existingEndTime) ||
+          (existingStartTime >= newStartDateTime && existingStartTime < newEndDateTime)
+        ) {
+          return true; // Çakışma varsa true döner
+        }
+      }
+    }
+    return false; // Çakışma yoksa false döner
+  },
+
+  async fetchEmployeeAppointments(employeeId) {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/employees/${employeeId}/appointments`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Çalışanın randevuları yüklenemedi:', error);
+      return [];
+    }
+  },
+  async updateAppointment() {
+    console.log(this.appointment.address);  // Debug: Adres kontrolü
+    console.log(this.appointment.postcode); // Debug: Posta kodu kontrolü
+
+    try {
+   
+
+      // Çakışma kontrolü yap
+      const hasConflict = await this.checkAppointmentOverlap();
+      console.log('Has Conflict:', hasConflict);
+      
+      if (hasConflict) {
+        // SweetAlert ile kullanıcıya çakışma mesajı ve seçenek sun
+        const result = await this.$swal.fire({
+          title: 'Çakışma Tespit Edildi!',
+          text: 'Bu çalışanın başka bir randevusu bu saat aralığında mevcut. Yine de devam etmek istiyor musunuz?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Evet, Devam Et',
+          cancelButtonText: 'Hayır, İptal Et'
         });
 
-        this.$swal.fire({
-          title: 'Başarılı!',
-          text: 'Randevu Başarıyla Güncellendi.',
-          icon: 'success',
-          confirmButtonText: 'Devam et'
-        }).then(() => {
-          this.$router.push('/appointments'); 
-        });
+        if (!result.isConfirmed) {
+          return; // Kullanıcı iptal ettiyse çık
+        }
+      }
+
+      // Çakışma yoksa veya kullanıcı "Devam Et" dediyse randevuyu güncelle
+      const response = await axios.put(`http://localhost:8000/api/appointments/${this.appointment.id}`, {
+        postcode: this.appointment.postcode,
+        appointment_date: this.appointment.appointment_date,
+        client_name: this.appointment.client_name,
+        client_email: this.appointment.client_email,
+        client_phone: this.appointment.client_phone,
+        employee_id: this.appointment.employee_id,
+        location_lat: this.selectedAddress.lat,
+        location_lng: this.selectedAddress.lng,
+        distance: this.appointment.distance,
+        duration: this.appointment.duration,
+        departure_time: this.appointment.departure_time,
+        available_time: this.appointment.available_time,
+        address: this.appointment.address,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      this.$swal.fire({
+        title: 'Başarılı!',
+        text: 'Randevu Başarıyla Güncellendi.',
+        icon: 'success',
+        confirmButtonText: 'Devam et'
+      }).then(() => {
         this.$router.push('/appointments');
-      } catch (error) {
-        if (error.response && error.response.data) {
-          console.error('Backend Hatası:', error.response.data);
-          this.$swal.fire({
-          title: 'Hata!',
-          text: 'Randevu  Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
-          icon: 'error',
-          confirmButtonText: 'Tamam'
-        });
-        } else {
-          console.error('Randevu güncellenemedi:', error);
-          this.$swal.fire({
+      });
+    } catch (error) {
+      if (error.response && error.response.data) {
+        console.error('Backend Hatası:', error.response.data);
+        this.$swal.fire({
           title: 'Hata!',
           text: 'Randevu Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
           icon: 'error',
           confirmButtonText: 'Tamam'
         });
-        }
+      } else {
+        console.error('Randevu güncellenemedi:', error);
+        this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
       }
-    },
+    }
+  },
     // Çalışanları API'den çek
     async fetchEmployees() {
       try {
@@ -422,7 +493,11 @@ export default {
 .appointment-form form button:hover {
   background-color: #2980b9;
 }
-
+.loader {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #3498db;
+}
 /* 768px ve altı için stil */
 @media (max-width: 768px) {
   .appointment-form {
