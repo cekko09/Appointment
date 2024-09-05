@@ -364,6 +364,13 @@ export default {
   margin-bottom: 20px;
 }
 
+.appointment-form form button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  color: #fff;
+  opacity: 0.6;
+}
+
 .appointment-form form {
   background: #ffffff;
   padding: 20px;
@@ -403,18 +410,11 @@ export default {
   width: 100%;
 }
 
-.appointment-form form button:disabled {
-  background-color: #bdc3c7;
-  cursor: not-allowed;
-  color: #fff;
-  opacity: 0.6;
-}
-
 .appointment-form form button:hover {
   background-color: #2980b9;
 }
 
-/* Mobil uyum için düzen */
+/* 768px ve altı için stil */
 @media (max-width: 768px) {
   .appointment-form {
     margin-left: 0;
@@ -434,4 +434,34 @@ export default {
     padding: 12px;
   }
 }
+
+/* 480px ve altı için stil */
+@media (max-width: 480px) {
+  .appointment-form {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .appointment-form h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .appointment-form form {
+    padding: 10px;
+  }
+
+  .appointment-form form input,
+  .appointment-form form select {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .appointment-form form button {
+    font-size: 16px;
+    padding: 10px;
+  }
+}
 </style>
+
+

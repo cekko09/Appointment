@@ -1,6 +1,5 @@
-<!-- Sidebar.vue -->
 <template>
-  <aside class="sidebar">
+  <aside :class="['sidebar', { open: isSidebarOpen }]">
     <div class="logo">
       <h1>Iceberg Estates</h1>
     </div>
@@ -26,30 +25,38 @@
         </li>
       </ul>
     </nav>
+    <!-- Aç/Kapa Butonu -->
+    <button class="toggle-button" @click="toggleSidebar">
+      <span v-if="!isSidebarOpen">&#9776; </span>
+      <span v-else class="close-button">&times;</span> <!-- Sağ üste yerleşen kapatma ikonu -->
+    </button>
   </aside>
 </template>
 
 <script>
 import { useUserStore } from '@/stores/user';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
 
 export default {
   name: 'Sidebar',
   data() {
     return {
-      userStore: useUserStore(), // Kullanıcı store'u
+      userStore: useUserStore(),
+      isSidebarOpen: true, // Mobilde menü başlangıçta kapalı
     };
   },
   computed: {
     userName() {
-      return this.userStore.userName; // Kullanıcının adı
+      return this.userStore.userName;
     },
   },
   created() {
-    this.userStore.fetchUser(); // Bileşen yüklendiğinde kullanıcıyı yükle
+    this.userStore.fetchUser();
   },
   methods: {
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen; // Menü aç/kapa işlevi
+    },
     async logout() {
       try {
         await axios.post('http://localhost:8000/api/logout', {}, {
@@ -57,24 +64,20 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        localStorage.removeItem('userRole'); // Kullanıcı rolünü temizle
-        localStorage.removeItem('token'); // Token'ı temizle
-        window.dispatchEvent(new Event('storage')); // Yeni bir event tetikleyin
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('token');
+        window.dispatchEvent(new Event('storage'));
 
-        // SweetAlert2 ile logout başarısı mesajı
         this.$swal.fire({
           title: 'Başarılı!',
           text: 'Başarıyla çıkış yaptınız.',
           icon: 'success',
           confirmButtonText: 'Tamam'
         }).then(() => {
-          this.$router.push('/'); // Kullanıcı onay verdikten sonra yönlendirin
+          this.$router.push('/');
         });
-
       } catch (error) {
         console.error('Logout failed', error);
-        
-        // SweetAlert2 ile hata mesajı
         this.$swal.fire({
           title: 'Hata!',
           text: 'Çıkış yapılamadı. Lütfen tekrar deneyin.',
@@ -88,7 +91,6 @@ export default {
 </script>
 
 <style scoped>
-
 .sidebar {
   width: 250px;
   background-color: #2c3e50;
@@ -96,6 +98,7 @@ export default {
   padding: 20px;
   color: #ecf0f1;
   transition: width 0.3s ease;
+  position: relative;
 }
 
 .logo h1 {
@@ -141,20 +144,47 @@ button:hover {
   background-color: #34495e;
 }
 
-/* Mobil cihazlar için yan menüyü gizleme ve açma */
+.toggle-button {
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: transparent;
+  color: #ecf0f1;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+
+/* Mobil cihazlar için yan menüyü açma/kapatma */
 @media (max-width: 768px) {
   .sidebar {
     width: 60px;
     padding: 10px;
+    overflow: hidden;
+    transition: width 0.3s ease;
   }
 
-  .logo h1 {
+  .sidebar.open {
+    width: 250px;
+  }
+  .logo{
+    margin-top: 40px;
+  }
+
+  .logo h1, .user_info, nav ul {
     display: none;
   }
 
-  nav ul li a {
-    font-size: 16px;
-    padding: 8px;
+  .sidebar.open .logo h1, .sidebar.open .user_info, .sidebar.open nav ul {
+    display: block;
   }
+
+  .toggle-button {
+    display: block;
+  }
+
+
 }
 </style>

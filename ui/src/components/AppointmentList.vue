@@ -30,9 +30,8 @@
         <option value="desc">En Yeni</option>
       </select>
     </div>
-
-    <!-- Randevuların tablo halinde listesi -->
-    <table class="appointment-table">
+     <div style="overflow-x:auto;">
+      <table class="appointment-table" >
       <thead>
         <tr>
           <th>Müşteri Adı</th>
@@ -59,6 +58,9 @@
         </tr>
       </tbody>
     </table>
+     </div>
+    <!-- Randevuların tablo halinde listesi -->
+    
   </div>
 </template>
 
@@ -178,7 +180,10 @@ export default {
   },
 };
 </script>
+
+
 <style scoped>
+/* Genel stiller */
 .appointment-list-container {
   width: 90%;
   padding: 20px;
@@ -188,11 +193,13 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Filtreleme ve tarih aralığı konteynerleri */
 .filter-container,
 .date-filter-container {
   margin-bottom: 20px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap; /* Flex öğelerinin taşmasını önlemek için */
 }
 
 .filter-container label,
@@ -208,8 +215,10 @@ export default {
   border-radius: 4px;
   border: 1px solid #ccc;
   margin-right: 15px;
+  flex: 1; /* Esnek boyutlandırma */
 }
 
+/* Tablo stilleri */
 .appointment-table {
   width: 100%;
   border-collapse: collapse;
@@ -237,6 +246,7 @@ export default {
   text-decoration: line-through;
 }
 
+/* Buton stilleri */
 .edit-button,
 .delete-button {
   margin-left: 5px;
@@ -266,59 +276,9 @@ export default {
   background-color: #c0392b;
 }
 
-.edit-form-container {
-  margin-top: 30px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+/* Medya sorguları */
 
-.edit-form-container h3 {
-  margin-bottom: 15px;
-  font-size: 24px;
-}
+/* 768px ve altı */
 
-.edit-form-container form {
-  display: flex;
-  flex-direction: column;
-}
 
-.edit-form-container form input {
-  margin-bottom: 15px;
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-.submit-button,
-.cancel-button {
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.submit-button {
-  background-color: #4caf50;
-  color: white;
-}
-
-.submit-button:hover {
-  background-color: #45a049;
-}
-
-.cancel-button {
-  background-color: #9e9e9e;
-  color: white;
-  margin-top: 10px;
-}
-
-.cancel-button:hover {
-  background-color: #757575;
-}
 </style>

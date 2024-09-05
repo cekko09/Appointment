@@ -43,7 +43,7 @@ export default {
   methods: {
     async addEmployee() {
       try {
-        const response = await axios.post('http://localhost:8000/api/employees', {
+        await axios.post('http://localhost:8000/api/employees', {
           first_name: this.firstName,
           last_name: this.lastName,
           email: this.email,
@@ -54,21 +54,10 @@ export default {
           },
         });
 
-        this.$swal.fire({
-          title: 'Çalışan Eklendi!',
-          text: 'Çalışan Başarıyla Eklendi.',
-          icon: 'success',
-          confirmButtonText: 'Devam et'
-        } ).then(() => {
-          this.$router.push('/employees');
-        });
+        alert('Çalışan başarıyla eklendi!');
+        this.$router.push('/employees');
       } catch (error) {
-        this.$swal.fire({
-          title: 'Hata!',
-          text: 'Çalışan Eklenemedi Lütfen Tekrar Deneyin.',
-          icon: 'error',
-          confirmButtonText: 'Devam et'
-        });alert('Çalışan eklenemedi. Lütfen bilgileri kontrol edin.');
+        alert('Çalışan eklenemedi. Lütfen bilgileri kontrol edin.');
       }
     },
   },
@@ -126,5 +115,60 @@ export default {
 
 .employee-form button:hover:not([disabled]) {
   background-color: #0069d9;
+}
+
+/* Mobil cihazlar (768px altı) için stil */
+@media (max-width: 768px) {
+  .employee-form {
+    width: 90%;
+    margin: 20px auto;
+    padding: 20px;
+    margin: 20px;
+  }
+
+  .employee-form h2 {
+    font-size: 24px;
+  }
+
+  .employee-form input {
+    padding: 8px;
+  }
+
+  .employee-form button {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+/* Telefon ekranları (480px altı) için stil */
+@media (max-width: 480px) {
+  .employee-form {
+    width: 95%;
+    padding: 15px;
+    margin: 20px;
+  }
+
+  .employee-form h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .employee-form input {
+    padding: 6px;
+    font-size: 14px;
+  }
+
+  .employee-form button {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .employee-form form div {
+    margin-bottom: 10px;
+  }
+
+  .employee-form label {
+    font-size: 14px;
+  }
 }
 </style>

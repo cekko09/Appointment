@@ -307,5 +307,56 @@ const updateEmployee = async () => {
     color: blue;
     margin-top: 20px;
   }
+  
+  /* Media Queries for Responsive Design */
+  
+  /* For devices with a width up to 768px */
+  @media (max-width: 767px) {
+    .employee-list-container {
+      width: 85%;
+    }
+    .edit-button, .delete-button {
+      margin-left: 0;
+      margin-top: 5px;
+    }
+  
+    .employee-form input {
+      font-size: 14px;
+    }
+  
+    .submit-button, .cancel-button {
+      font-size: 14px;
+      padding: 8px;
+    }
+  }
+  
+  /* For devices with a width up to 480px */
+  @media (max-width: 480px) {
+    .employee-list-container {
+      width: 80%;
+      padding: 10px;
+    }
+  
+    .employee-item {
+      padding: 8px 0;
+    }
+  
+    .edit-button, .delete-button {
+      margin-left: 0;
+      margin-top: 5px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+  
+    .employee-form input {
+      font-size: 12px;
+      padding: 8px;
+    }
+  
+    .submit-button, .cancel-button {
+      font-size: 14px;
+      padding: 8px;
+    }
+  }
   </style>
   

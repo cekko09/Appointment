@@ -129,7 +129,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 #map {
   width: 100%;
@@ -139,4 +138,18 @@ export default {
   margin-top: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+@media (max-width: 768px) {
+  #map {
+    height: 250px; /* Harita yüksekliğini azalt */
+  }
+}
+/* 480px ve altı ekranlar için medya sorgusu */
+@media (max-width: 480px) {
+  #map {
+    height: 200px; /* Harita yüksekliğini azalt */
+  }
+}
+
+/* 768px ve altı ekranlar için medya sorgusu */
+
 </style>
