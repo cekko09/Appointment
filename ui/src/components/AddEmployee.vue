@@ -173,7 +173,9 @@ export default {
 /* Mobil cihazlar (768px altı) için stil */
 @media (max-width: 768px) {
   .employee-form {
-    width: 90%;
+    width: 80%;
+    right: 10px;
+    position: absolute;
     margin: 20px auto;
     padding: 20px;
     margin: 20px;
@@ -196,7 +198,9 @@ export default {
 /* Telefon ekranları (480px altı) için stil */
 @media (max-width: 480px) {
   .employee-form {
-    width: 95%;
+    width: 70%;
+    right: 10px;
+    position: absolute;
     padding: 15px;
     margin: 20px;
   }

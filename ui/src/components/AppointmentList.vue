@@ -196,8 +196,8 @@ export default {
 /* Genel stiller */
 .appointment-list-container {
   width: 80%;
-  padding: 20px;
   right: 10px;
+  padding: 20px;
   position: absolute;
   border: 1px solid #ddd;
   border-radius: 8px;

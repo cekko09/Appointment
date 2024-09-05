@@ -354,7 +354,9 @@ const updateEmployee = async () => {
   /* For devices with a width up to 768px */
   @media (max-width: 767px) {
     .employee-list-container {
-      width: 85%;
+      width: 90%;
+    right: 30px;
+    position: absolute;
     }
     .edit-button, .delete-button {
       margin-left: 0;
@@ -375,6 +377,8 @@ const updateEmployee = async () => {
   @media (max-width: 480px) {
     .employee-list-container {
       width: 80%;
+    right: 10px;
+    position: absolute;
       padding: 10px;
     }
   

@@ -355,8 +355,8 @@ export default {
 
 <style scoped>
 .appointment-form {
+  margin: 20px auto;
   width: 90%;
-  margin: auto;
   padding: 20px;
   background-color: #ecf0f1;
   min-height: 100vh;
@@ -365,6 +365,7 @@ export default {
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
+  border-radius: 5px;
 }
 
 .appointment-form h2 {
@@ -425,6 +426,9 @@ export default {
 /* 768px ve altı için stil */
 @media (max-width: 768px) {
   .appointment-form {
+    width: 80%;
+    right: 30px;
+    position: absolute;
     margin-left: 0;
     padding: 15px;
   }
@@ -446,7 +450,9 @@ export default {
 /* 480px ve altı için stil */
 @media (max-width: 480px) {
   .appointment-form {
-    width: 100%;
+    width: 80%;
+    right: 10px;
+    position: absolute;
     padding: 10px;
   }
 
