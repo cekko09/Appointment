@@ -2,65 +2,69 @@
   <div class="appointment-list-container">
     <h2>Randevular Listesi</h2>
 
+    <!-- Yükleniyor mesajı -->
+    <div v-if="loading" class="loading-message">Yükleniyor...</div>
+
     <!-- Çalışan filtreleme seçeneği -->
-    <div class="filter-container">
-      <label for="employee-filter">Emlakçı Çalışanı:</label>
-      <select v-model="selectedEmployeeFilter" id="employee-filter" @change="fetchAppointments">
-        <option value="">Tüm Emlakçılar</option>
-        <option v-for="employee in employees" :key="employee.id" :value="employee.id">
-          {{ employee.first_name }} {{ employee.last_name }}
-        </option>
-      </select>
-    </div>
+    <div v-else>
+      <div class="filter-container">
+        <label for="employee-filter">Emlakçı Çalışanı:</label>
+        <select v-model="selectedEmployeeFilter" id="employee-filter" @change="fetchAppointments">
+          <option value="">Tüm Emlakçılar</option>
+          <option v-for="employee in employees" :key="employee.id" :value="employee.id">
+            {{ employee.first_name }} {{ employee.last_name }}
+          </option>
+        </select>
+      </div>
 
-    <!-- Tarih Aralığı Filtreleme Seçeneği -->
-    <div class="date-filter-container">
-      <label for="start-date">Başlangıç Tarihi:</label>
-      <input type="date" id="start-date" v-model="startDate" @change="filterAppointmentsByDate" />
+      <!-- Tarih Aralığı Filtreleme Seçeneği -->
+      <div class="date-filter-container">
+        <label for="start-date">Başlangıç Tarihi:</label>
+        <input type="date" id="start-date" v-model="startDate" @change="filterAppointmentsByDate" />
 
-      <label for="end-date">Bitiş Tarihi:</label>
-      <input type="date" id="end-date" v-model="endDate" @change="filterAppointmentsByDate" />
-    </div>
+        <label for="end-date">Bitiş Tarihi:</label>
+        <input type="date" id="end-date" v-model="endDate" @change="filterAppointmentsByDate" />
+      </div>
 
-    <!-- Tarih Sıralama Select Box -->
-    <div class="sort-container">
-      <label for="sort-order">Tarihe Göre Sırala:</label>
-      <select v-model="sortOrder" @change="sortAppointments">
-        <option value="asc">En Eski</option>
-        <option value="desc">En Yeni</option>
-      </select>
+      <!-- Tarih Sıralama Select Box -->
+      <div class="sort-container">
+        <label for="sort-order">Tarihe Göre Sırala:</label>
+        <select v-model="sortOrder" @change="sortAppointments">
+          <option value="asc">En Eski</option>
+          <option value="desc">En Yeni</option>
+        </select>
+      </div>
+      
+      <div style="overflow-x:auto;">
+        <table class="appointment-table">
+          <thead>
+            <tr>
+              <th>Müşteri Adı</th>
+              <th>Randevu Tarihi</th>
+              <th>Posta Kodu</th>
+              <th>Emlakçı</th>
+              <th>Ofisten Çıkış Zamanı</th>
+              <th>Randevudan Sonra Müsait Olacağı Zaman</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="appointment in sortedAppointments" :key="appointment.id" :class="{ past: isPastAppointment(appointment) }">
+              <td>{{ appointment.client_name }}</td>
+              <td>{{ formatDateTime(appointment.appointment_date) }}</td>
+              <td>{{ appointment.postcode }}</td>
+              <td>{{ getEmployeeById(appointment.employee_id).first_name }} {{ getEmployeeById(appointment.employee_id).last_name }}</td>
+              <td>{{ appointment.departure_time }}</td>
+              <td>{{ appointment.available_time }}</td>
+              <td>
+                <button @click="navigateToEdit(appointment.id)" class="edit-button">Düzenle</button>
+                <button @click="deleteAppointment(appointment.id)" class="delete-button">Sil</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-     <div style="overflow-x:auto;">
-      <table class="appointment-table" >
-      <thead>
-        <tr>
-          <th>Müşteri Adı</th>
-          <th>Randevu Tarihi</th>
-          <th>Posta Kodu</th>
-          <th>Emlakçı</th>
-          <th>Ofisten Çıkış Zamanı</th>
-          <th>Randevudan Sonra Müsait Olacağı Zaman</th>
-          <th>İşlemler</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="appointment in sortedAppointments" :key="appointment.id" :class="{ past: isPastAppointment(appointment) }">
-          <td>{{ appointment.client_name }}</td>
-          <td>{{ formatDateTime(appointment.appointment_date) }}</td>
-          <td>{{ appointment.postcode }}</td>
-          <td>{{ getEmployeeById(appointment.employee_id).first_name }} {{ getEmployeeById(appointment.employee_id).last_name }}</td>
-          <td>{{ appointment.departure_time }}</td>
-          <td>{{ appointment.available_time }}</td>
-          <td>
-            <button @click="navigateToEdit(appointment.id)" class="edit-button">Düzenle</button>
-            <button @click="deleteAppointment(appointment.id)" class="delete-button">Sil</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-     </div>
-    <!-- Randevuların tablo halinde listesi -->
-    
   </div>
 </template>
 
@@ -77,6 +81,7 @@ export default {
       endDate: '',
       selectedAppointment: null,
       sortOrder: 'asc',  // Tarih sıralaması için varsayılan sıralama
+      loading: false // Veri yüklenirken gösterilecek durumu
     };
   },
   computed: {
@@ -114,6 +119,7 @@ export default {
       this.$router.push({ name: 'AppointmentEdit', params: { id: appointmentId } });
     },
     async fetchEmployees() {
+      this.loading = true; // Veri yükleniyor
       try {
         const response = await axios.get('http://localhost:8000/api/employees', {
           headers: {
@@ -123,9 +129,12 @@ export default {
         this.employees = response.data;
       } catch (error) {
         console.error('Çalışanlar yüklenemedi:', error);
+      } finally {
+        this.loading = false; // Veri yüklenme tamamlandı
       }
     },
     async fetchAppointments() {
+      this.loading = true; // Veri yükleniyor
       try {
         const response = await axios.get('http://localhost:8000/api/appointments', {
           params: { employee_id: this.selectedEmployeeFilter },  // Çalışana göre filtreleme
@@ -136,9 +145,10 @@ export default {
         this.appointments = response.data;
       } catch (error) {
         console.error('Randevular yüklenemedi:', error);
+      } finally {
+        this.loading = false; // Veri yüklenme tamamlandı
       }
     },
-   
     isPastAppointment(appointment) {
       return new Date(appointment.appointment_date) < new Date();  // Geçmiş randevuları kontrol eder
     },
@@ -162,7 +172,7 @@ export default {
           text: 'Randevu Başarıyla Silindi.',
           icon: 'success',
           confirmButtonText: 'Tamam'
-        })  
+        });
       } catch (error) {
         console.error('Randevu silinemedi:', error);
         this.$swal.fire({
@@ -185,12 +195,22 @@ export default {
 <style scoped>
 /* Genel stiller */
 .appointment-list-container {
-  width: 90%;
+  width: 80%;
   padding: 20px;
+  right: 10px;
+  position: absolute;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+}
+.loading-message {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: blue;
+  margin: 20px 0;
 }
 
 /* Filtreleme ve tarih aralığı konteynerleri */
@@ -255,7 +275,7 @@ export default {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease;margin-bottom: 5px;
 }
 
 .edit-button {

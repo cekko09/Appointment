@@ -204,6 +204,7 @@ const updateEmployee = async () => {
     border-radius: 8px;
     background-color: #f9f9f9;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
   }
   
   .employee-list {
@@ -231,6 +232,8 @@ const updateEmployee = async () => {
   .edit-button {
     background-color: #ffc107;
     color: white;
+    right: 80px;
+    position: absolute;
   }
   
   .delete-button {

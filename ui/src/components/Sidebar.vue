@@ -32,7 +32,6 @@
     </button>
   </aside>
 </template>
-
 <script>
 import { useUserStore } from '@/stores/user';
 import axios from 'axios';
@@ -42,7 +41,7 @@ export default {
   data() {
     return {
       userStore: useUserStore(),
-      isSidebarOpen: true, // Mobilde menü başlangıçta kapalı
+      isSidebarOpen: false, // Mobilde menü başlangıçta kapalı
     };
   },
   computed: {
@@ -89,7 +88,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .sidebar {
   width: 250px;
@@ -98,7 +96,18 @@ export default {
   padding: 20px;
   color: #ecf0f1;
   transition: width 0.3s ease;
-  position: relative;
+  position: fixed; /* Menü ekranın üstünde kalır */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Diğer componentlerin üstünde */
+}
+
+.sidebar.open {
+  z-index: 1000; /* Açık olduğunda üstte kalmasını sağlar */
+}
+
+.logo{
+  margin-top: 40px;
 }
 
 .logo h1 {
@@ -146,7 +155,7 @@ button:hover {
 
 .toggle-button {
   display: none;
-  position: absolute;
+  position: fixed; /* Menü butonunun sabit olmasını sağlar */
   top: 10px;
   left: 10px;
   background-color: transparent;
@@ -154,8 +163,12 @@ button:hover {
   border: none;
   font-size: 24px;
   cursor: pointer;
+  z-index: 1001; /* Diğer içeriklerin üstünde */
 }
 
+.close-button {
+  font-size: 30px;
+}
 
 /* Mobil cihazlar için yan menüyü açma/kapatma */
 @media (max-width: 768px) {
@@ -168,9 +181,7 @@ button:hover {
 
   .sidebar.open {
     width: 250px;
-  }
-  .logo{
-    margin-top: 40px;
+    z-index: 1000; /* Açık olduğunda üstte kalmasını sağlar */
   }
 
   .logo h1, .user_info, nav ul {
@@ -184,7 +195,6 @@ button:hover {
   .toggle-button {
     display: block;
   }
-
-
 }
 </style>
+
