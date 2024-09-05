@@ -336,8 +336,9 @@ onAddressSelected(location) {
 <style scoped>
 .appointment-form {
   width: 90%;
-  margin: auto;
+  margin: 20px auto;
   padding: 20px;
+  border-radius: 5px;
   background-color: #ecf0f1;
   min-height: 100vh;
   display: flex;
@@ -405,6 +406,9 @@ onAddressSelected(location) {
 /* 768px ve altı için stil */
 @media (max-width: 768px) {
   .appointment-form {
+    width: 80%;
+    right: 30px;
+    position: absolute;
     margin-left: 0;
     padding: 15px;
   }
@@ -426,7 +430,9 @@ onAddressSelected(location) {
 /* 480px ve altı için stil */
 @media (max-width: 480px) {
   .appointment-form {
-    width: 100%;
+    width: 80%;
+    right: 10px;
+    position: absolute;
     padding: 10px;
   }
 
