@@ -1,11 +1,12 @@
+<!-- Sidebar.vue -->
 <template>
   <aside class="sidebar">
     <div class="logo">
       <h1>Iceberg Estates</h1>
     </div>
     <div class="user_info">
-      <!-- Kullanıcı rolünü localStorage'dan al ve yazdır -->
-      <h2>{{ userRole }}</h2>
+      <h2 v-if="userName">{{ userName }}</h2> <!-- Kullanıcının adını göster -->
+      <h6 v-else>Kullanıcı Bilgileri Yükleniyor...</h6>
     </div>
     <nav>
       <ul>
@@ -29,25 +30,26 @@
 </template>
 
 <script>
+import { useUserStore } from '@/stores/user';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 export default {
   name: 'Sidebar',
-
   data() {
     return {
-      userRole: 'guest',
+      userStore: useUserStore(), // Kullanıcı store'u
     };
   },
-  methods: {
-
-    async fetchUserRole() {
-      const role = localStorage.getItem('userRole'); 
-      if (role) {
-        this.userRole = role; 
-      }
+  computed: {
+    userName() {
+      return this.userStore.userName; // Kullanıcının adı
     },
+  },
+  created() {
+    this.userStore.fetchUser(); // Bileşen yüklendiğinde kullanıcıyı yükle
+  },
+  methods: {
     async logout() {
       try {
         await axios.post('http://localhost:8000/api/logout', {}, {
@@ -55,17 +57,32 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        localStorage.removeItem('userRole'); 
-        localStorage.removeItem('token'); 
-        window.dispatchEvent(new Event('storage'));
-        this.$router.push('/');
+        localStorage.removeItem('userRole'); // Kullanıcı rolünü temizle
+        localStorage.removeItem('token'); // Token'ı temizle
+        window.dispatchEvent(new Event('storage')); // Yeni bir event tetikleyin
+
+        // SweetAlert2 ile logout başarısı mesajı
+        this.$swal.fire({
+          title: 'Başarılı!',
+          text: 'Başarıyla çıkış yaptınız.',
+          icon: 'success',
+          confirmButtonText: 'Tamam'
+        }).then(() => {
+          this.$router.push('/'); // Kullanıcı onay verdikten sonra yönlendirin
+        });
+
       } catch (error) {
         console.error('Logout failed', error);
+        
+        // SweetAlert2 ile hata mesajı
+        this.$swal.fire({
+          title: 'Hata!',
+          text: 'Çıkış yapılamadı. Lütfen tekrar deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
       }
     },
-  },
-  created() {
-    this.fetchUserRole();
   },
 };
 </script>

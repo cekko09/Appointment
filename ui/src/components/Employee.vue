@@ -36,6 +36,8 @@
   <script>
   import axios from 'axios';
   import { ref, onMounted } from 'vue';
+  import Swal from 'sweetalert2';
+
   
   export default {
     setup() {
@@ -66,25 +68,53 @@
       };
   
       const deleteEmployee = async (id) => {
-        if (!confirm('Bu çalışanı silmek istediğinize emin misiniz?')) return;
-        loading.value = true;
-        try {
-          await axios.delete(`http://localhost:8000/api/employees/${id}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          employees.value = employees.value.filter(employee => employee.id !== id);
-          message.value = 'Çalışan başarıyla silindi.';
-          messageType.value = 'success';
-        } catch (error) {
-          message.value = 'Çalışan silinemedi.';
-          messageType.value = 'error';
-        } finally {
-          loading.value = false;
-        }
-      };
-  
+  // SweetAlert2 ile silme işlemi için onay kutusu
+  const result = await Swal.fire({
+    title: 'Emin misiniz?',
+    text: 'Bu çalışanı silmek istediğinizden emin misiniz?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Evet, sil!',
+    cancelButtonText: 'Hayır, iptal et'
+  });
+
+
+  if (!result.isConfirmed) return; // Eğer kullanıcı 'Hayır, iptal et' derse işlemi sonlandır
+
+  loading.value = true;
+
+  try {
+    await axios.delete(`http://localhost:8000/api/employees/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    // Çalışanı listeden çıkar
+    employees.value = employees.value.filter(employee => employee.id !== id);
+
+    // Başarı mesajı
+    this.$swal.fire({
+      title: 'Başarılı!',
+      text: 'Çalışan başarıyla silindi.',
+      icon: 'success',
+      confirmButtonText: 'Tamam'
+    });
+  } catch (error) {
+    // Hata mesajı
+    this.$swal.fire({
+      title: 'Hata!',
+      text: 'Çalışan silinemedi. Lütfen tekrar deneyin.',
+      icon: 'error',
+      confirmButtonText: 'Tamam'
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
       const editEmployee = (employee) => {
         selectedEmployee.value = { ...employee }; // Seçili çalışanı düzenleme moduna al
         message.value = ''; // Mesajı temizle
@@ -95,33 +125,68 @@
         message.value = ''; // Mesajı temizle
       };
   
-      const updateEmployee = async () => {
-        loading.value = true;
-        try {
-          await axios.put(`http://localhost:8000/api/employees/${selectedEmployee.value.id}`, {
-            first_name: selectedEmployee.value.first_name,
-            last_name: selectedEmployee.value.last_name,
-            email: selectedEmployee.value.user.email,
-          }, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          // Güncellenen çalışanı listede güncelle
-          const index = employees.value.findIndex(emp => emp.id === selectedEmployee.value.id);
-          if (index !== -1) {
-            employees.value[index] = { ...selectedEmployee.value };
-          }
-          selectedEmployee.value = null; // Düzenleme modunu kapat
-          message.value = 'Çalışan başarıyla güncellendi.';
-          messageType.value = 'success';
-        } catch (error) {
-          message.value = 'Çalışan güncellenemedi.';
-          messageType.value = 'error';
-        } finally {
-          loading.value = false;
-        }
-      };
+     
+const updateEmployee = async () => {
+  // Kullanıcıdan onay almak için SweetAlert kullan
+  const result = await Swal.fire({
+    title: 'Emin misiniz?',
+    text: 'Bu çalışanı güncellemek istediğinizden emin misiniz?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Evet, güncelle!',
+    cancelButtonText: 'Hayır, iptal et'
+  });
+
+  // Kullanıcı güncellemeyi iptal ederse çık
+  if (!result.isConfirmed) return;
+
+  loading.value = true;
+  try {
+    await axios.put(
+      `http://localhost:8000/api/employees/${selectedEmployee.value.id}`,
+      {
+        first_name: selectedEmployee.value.first_name,
+        last_name: selectedEmployee.value.last_name,
+        email: selectedEmployee.value.user.email,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+
+    // Güncellenen çalışanı listede güncelle
+    const index = employees.value.findIndex(
+      (emp) => emp.id === selectedEmployee.value.id
+    );
+    if (index !== -1) {
+      employees.value[index] = { ...selectedEmployee.value };
+    }
+
+    selectedEmployee.value = null; // Düzenleme modunu kapat
+
+    // SweetAlert2 ile başarı mesajı gösterme
+    await Swal.fire({
+      title: 'Başarılı!',
+      text: 'Çalışan başarıyla güncellendi.',
+      icon: 'success',
+      confirmButtonText: 'Tamam',
+    });
+  } catch (error) {
+    // SweetAlert2 ile hata mesajı gösterme
+    await Swal.fire({
+      title: 'Hata!',
+      text: 'Çalışan güncellenemedi. Lütfen tekrar deneyin.',
+      icon: 'error',
+      confirmButtonText: 'Tamam',
+    });
+  } finally {
+    loading.value = false;
+  }
+};
   
       onMounted(fetchEmployees);
   

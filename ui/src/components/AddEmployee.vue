@@ -54,10 +54,21 @@ export default {
           },
         });
 
-        alert('Çalışan başarıyla eklendi!');
-        this.$router.push('/employees');
+        this.$swal.fire({
+          title: 'Çalışan Eklendi!',
+          text: 'Çalışan Başarıyla Eklendi.',
+          icon: 'success',
+          confirmButtonText: 'Devam et'
+        } ).then(() => {
+          this.$router.push('/employees');
+        });
       } catch (error) {
-        alert('Çalışan eklenemedi. Lütfen bilgileri kontrol edin.');
+        this.$swal.fire({
+          title: 'Hata!',
+          text: 'Çalışan Eklenemedi Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Devam et'
+        });alert('Çalışan eklenemedi. Lütfen bilgileri kontrol edin.');
       }
     },
   },

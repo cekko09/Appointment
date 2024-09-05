@@ -1,21 +1,32 @@
+// stores/userStore.js
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-export const useUserStore = defineStore('user', {
+export const useUserStore = defineStore('userStore', {
   state: () => ({
-    user: null,
+    user: null, // Kullanıcı bilgilerini saklayacağımız state
   }),
   actions: {
     async fetchUser() {
       try {
-        const response = await axios.get('http://localhost:8000/api/user'); // Kullanıcı bilgilerini backend'den çek
-        this.user = response.data; // Kullanıcı bilgilerini store'a kaydet
+        const response = await axios.get('http://localhost:8000/api/user', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        this.user = response.data; // Kullanıcı bilgilerini state'e kaydet
       } catch (error) {
-        console.error('Kullanıcı bilgileri alınamadı:', error);
+        console.error('Kullanıcı bilgileri çekilemedi:', error);
+        this.user = null; // Hata durumunda kullanıcı bilgisini sıfırla
       }
     },
   },
   getters: {
-    userRole: (state) => state?.user?.role ,
+    userName(state) {
+      return state.user ? state.user.name : ''; // Kullanıcının adını döndüren getter
+    },
+    userRole(state) {
+      return state.user ? state.user.role : ''; // Kullanıcının rolünü döndüren getter
+    },
   },
 });

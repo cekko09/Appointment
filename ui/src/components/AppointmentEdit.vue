@@ -98,6 +98,7 @@ export default {
       addressSelectedFromMap: false
     };
   },
+  
   watch: {
     'appointment.postcode': function(newVal) {
       if (!newVal) {
@@ -271,10 +272,7 @@ export default {
       console.log(this.appointment.postcode); // Debug: Posta kodu kontrolü
 
       try {
-        if (!this.selectedAddress || typeof this.selectedAddress.lat !== 'number' || typeof this.selectedAddress.lng !== 'number') {
-          alert('Lütfen geçerli bir adres seçin.');
-          return;
-        }
+     
         
         const response = await axios.put(`http://localhost:8000/api/appointments/${this.appointment.id}`, {
           postcode: this.appointment.postcode,
@@ -296,15 +294,32 @@ export default {
           },
         });
 
-        alert('Randevu başarıyla güncellendi!');
+        this.$swal.fire({
+          title: 'Başarılı!',
+          text: 'Randevu Başarıyla Güncellendi.',
+          icon: 'success',
+          confirmButtonText: 'Devam et'
+        }).then(() => {
+          this.$router.push('/appointments'); 
+        });
         this.$router.push('/appointments');
       } catch (error) {
         if (error.response && error.response.data) {
           console.error('Backend Hatası:', error.response.data);
-          alert(`Hata: ${JSON.stringify(error.response.data.errors)}`);
+          this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu  Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
         } else {
           console.error('Randevu güncellenemedi:', error);
-          alert('Randevu güncellenemedi. Lütfen tekrar deneyin.');
+          this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu Güncellenirken Hata Oluştu! Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
         }
       }
     },
@@ -325,6 +340,7 @@ export default {
   created() {
     this.fetchEmployees();
     this.fetchAppointment();
+    this.selectAddress = this.appointment.address;
   },
 };
 </script>

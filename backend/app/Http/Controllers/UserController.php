@@ -1,29 +1,34 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User; // Kullanıcı modeli
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
     /**
-     * Kullanıcı bilgilerini döndürür.
+     * Giriş yapmış kullanıcı bilgilerini getir.
      */
-    public function getUserInfo(Request $request)
+    public function getUser(Request $request)
     {
-        // Örnek olarak kimlik doğrulamayı kaldırıyoruz ve tüm kullanıcıyı gösteriyoruz.
-        // Eğer sadece giriş yapan kullanıcıyı istiyorsanız, aşağıdaki gibi yapabilirsiniz:
-        // $user = $request->user(); 
-        
-        // Bu örnekte tüm kullanıcıları alıyoruz, siz dilediğiniz gibi düzenleyebilirsiniz.
-        $user = User::find(1); // Örneğin, 1. kullanıcıyı al
-        
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role, // Rol, örneğin 'admin' veya 'employee'
-        ]);
+        try {
+            // Giriş yapmış kullanıcının bilgisini al
+            $user = Auth::user();
+
+            if ($user) {
+                return response()->json([
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role, // Rol bilgisini döndür
+                ], 200);
+            } else {
+                return response()->json(['message' => 'Kullanıcı bulunamadı.'], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Kullanıcı bilgileri alınırken hata oluştu.'], 500);
+        }
     }
 }

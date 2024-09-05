@@ -285,14 +285,31 @@ onAddressSelected(location) {
           },
         });
 
-        alert('Randevu başarıyla oluşturuldu!');
+        this.$swal.fire({
+          title: 'Başarılı!',
+          text: 'Randevu Başarıyla Oluşturuldu.',
+          icon: 'success',
+          confirmButtonText: 'Devam et'
+        }).then(() => {
+          this.$router.push('/appointments'); 
+        });
       } catch (error) {
         if (error.response && error.response.data) {
           console.error('Backend Hatası:', error.response.data);
-          alert(`Hata: ${JSON.stringify(error.response.data.errors)}`);
+          this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu Oluşturulamadı Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Devam et'
+        });
         } else {
           console.error('Randevu oluşturulamadı:', error);
-          alert('Randevu oluşturulamadı. Lütfen tekrar deneyin.');
+          this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu Oluşturulamadı Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
         }
       }
     },

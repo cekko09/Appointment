@@ -155,10 +155,20 @@ export default {
           },
         });
         this.appointments = this.appointments.filter(appt => appt.id !== appointmentId);
-        alert('Randevu başarıyla silindi.');
+        this.$swal.fire({
+          title: 'Randevu Silindi!',
+          text: 'Randevu Başarıyla Silindi.',
+          icon: 'success',
+          confirmButtonText: 'Tamam'
+        })  
       } catch (error) {
         console.error('Randevu silinemedi:', error);
-        alert('Randevu silinemedi.');
+        this.$swal.fire({
+          title: 'Hata!',
+          text: 'Randevu Silinirken Hata Oluştu! Lütfen Tekrar Deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
       }
     },
   },

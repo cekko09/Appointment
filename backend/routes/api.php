@@ -22,7 +22,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/appointments/{id}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
 });
 
-Route::get('/user', [UserController::class, 'getUserInfo']);
+Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser']);
 
    
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
@@ -51,7 +51,7 @@ Route::get('/fetch-nearby-addresses', function (Request $request) {
 
     try {
         // Google Geocoding API'sine istek gönderiyoruz
-        $apiKey = ""; // Google API anahtarınızı .env dosyasından alın
+        $apiKey = "AIzaSyBK1XtJlrLVOujmrk5tNW4IoFWyrycy6G0"; // Google API anahtarınızı .env dosyasından alın
         $googleApiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng={$latitude},{$longitude}&key={$apiKey}";
 
         $response = Http::get($googleApiUrl);
