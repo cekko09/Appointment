@@ -78,7 +78,6 @@ export default {
           },
         });
 
-        alert('Çalışan başarıyla eklendi!');
         this.$router.push('/employees');
       } catch (error) {
       if (error.response.data.errors.email) {
@@ -98,6 +97,8 @@ export default {
         });
       }
        else  {
+        alert(error)
+        
         this.$swal.fire({
           title: 'Hata!',
           text: 'Çalışan eklenemedi. Lütfen tekrar deneyin.',
