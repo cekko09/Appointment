@@ -77,7 +77,8 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-
+      
+        
         this.$router.push('/employees');
       } catch (error) {
       if (error.response.data.errors.email) {
@@ -88,7 +89,7 @@ export default {
           icon: 'error',
           confirmButtonText: 'Tamam'
         });
-      }if(error.response.data.errors.password){
+      }else if(error.response.data.errors.password){
         this.$swal.fire({
           title: 'Hata!',
           text: 'Şifre En az 8 karakterden oluşmalıdır',
@@ -97,7 +98,7 @@ export default {
         });
       }
        else  {
-        alert(error)
+        console.log(error.response.data.errors.email)
         
         this.$swal.fire({
           title: 'Hata!',
