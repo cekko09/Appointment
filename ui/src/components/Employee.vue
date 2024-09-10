@@ -74,24 +74,26 @@ export default {
       const loading = ref(false);
   
       const fetchEmployees = async () => {
-        loading.value = true;
-        try {
-          const response = await axios.get('http://localhost:8000/api/employees', {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          employees.value = response.data;
-          console.log(response.data);
-          
-          message.value = ''; // Önceki mesajı temizle
-        } catch (error) {
-          message.value = 'Çalışanlar yüklenemedi.';
-          messageType.value = 'error';
-        } finally {
-          loading.value = false;
-        }
-      };
+  loading.value = true;
+  try {
+    const response = await axios.get('http://localhost:8000/api/employees', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    // Admin rolü olmayan kullanıcıları filtrele
+    employees.value = response.data.filter(user => user.user.role !== 'admin');
+    console.log(response.data);
+    
+    message.value = ''; // Önceki mesajı temizle
+  } catch (error) {
+    message.value = 'Çalışanlar yüklenemedi.';
+    messageType.value = 'error';
+  } finally {
+    loading.value = false;
+  }
+};
   
       const deleteEmployee = async (id) => {
   // SweetAlert2 ile silme işlemi için onay kutusu
