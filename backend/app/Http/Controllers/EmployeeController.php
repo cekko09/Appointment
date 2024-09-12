@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -100,5 +101,14 @@ class EmployeeController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'Çalışan başarıyla silindi.']);
+    }
+    public function getAppointments($employeeId)
+    {
+        try {
+            $appointments = Appointment::where('employee_id', $employeeId)->get();
+            return response()->json($appointments, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Çalışanın randevuları yüklenemedi.'], 500);
+        }
     }
 }

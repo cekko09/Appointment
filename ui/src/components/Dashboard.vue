@@ -1,8 +1,10 @@
 <template>
   
     <div class="dashboard">
+      <div class="container">
       <h1>Dashboard</h1>
       <p>Randevu yönetim sistemine hoş geldiniz.</p>
+    </div>
     </div>
   </template>
   
@@ -19,39 +21,36 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+align-items: center;
+text-align: center;
   box-sizing: border-box;
   width: 100%;
+  position: absolute;
+  right: 0;
 }
-
+.container{
+  margin-top: 200px;
+  padding-left: 120px;
+}
 .dashboard h2 {
   font-size: 28px;
   margin-bottom: 20px;
+  margin-top: 100px;
 }
 
-.content {
-  width: 100%;
-  max-width: 1200px;
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
 
 /* Mobil uyum için düzen */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .dashboard {
-    margin-left: 0;
     padding: 15px;
-  }
+  width: 90%;
+  position: absolute;
+  right: 0;
+}
 
   .dashboard h2 {
     font-size: 24px;
   }
 
-  .content {
-    padding: 15px;
-  }
 }
 </style>
