@@ -1,93 +1,67 @@
 # version: '3.8'
 
-# services:
-#   # Laravel API Service
-#   backend:
-#     build:
-#       context: ./backend
-#       dockerfile: Dockerfile
-#     container_name: backend
-#     restart: always
-#     ports:
-#       - "127.0.0.1:8000:8000"
-#     volumes:
-#       - ./backend:/var/www/html
-#     environment:
-#       - DB_CONNECTION=pgsql
-#       - DB_HOST=host.docker.internal  # Localhost'a Docker'dan erişim için 'host.docker.internal' kullan
-#       - DB_PORT=5432
-#       - DB_DATABASE=emlakci
-#       - DB_USERNAME=laraveluser  # PostgreSQL'de oluşturulan kullanıcı adı
-#       - DB_PASSWORD=password123  # PostgreSQL'de oluşturulan şifre
+ services:
+   # Laravel API Service
+   backend:
+     build:
+       context: ./backend
+       dockerfile: Dockerfile
+     container_name: backend
+     restart: always
+     ports:
+       - "8000:80"
+     volumes:
+       - ./backend:/var/www/html
+     environment:
+       - DB_CONNECTION=pgsql
+       - DB_HOST=pgsql  # Localhost'a Docker'dan erişim için 'host.docker.internal' kullan
+       - DB_PORT=5432
+       - DB_DATABASE=emlakci
+       - DB_USERNAME=laraveluser  # PostgreSQL'de oluşturulan kullanıcı adı
+       - DB_PASSWORD=password123  # PostgreSQL'de oluşturulan şifre
+     networks:
+        - iceberg-digital-network
 
 #   # Vue UI Service
-#   ui:
-#     build:
-#       context: ./ui
-#       dockerfile: Dockerfile
-#     container_name: ui
-#     restart: always
-#     ports:
-#       - "127.0.0.1:8080:8080"
-#     volumes:
-#       - ./ui:/app
-#     environment:
-#       - NODE_ENV=development
+   ui:
+     build:
+       context: ./ui
+       dockerfile: Dockerfile
+     container_name: ui
+     restart: always
+     ports:
+       - "8080:8080"
+     volumes:
+       - ./ui:/app
+     environment:
+       - NODE_ENV=development
+     networks:
+        - iceberg-digital-network
+
+     # PostgreSQL Database Service
+   pgsql:
+       image: postgres:16
+       container_name: pgsql
+       restart: always
+       volumes:
+         - ./pgdata:/var/lib/postgresql/data
+         - ./pgdata/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+       environment:
+         POSTGRES_DB: emlakci
+         POSTGRES_USER: laraveluser
+         POSTGRES_PASSWORD: password123
+       ports:
+         - "5432:5432"
+       networks:
+        - iceberg-digital-network
+
+
+ networks:
+   iceberg-digital-network:
+     driver: bridge
 
 
 
 
 
 
-
-
-
-
-# # version: '3.8'
-
-# # services:
-# #   # Laravel API Service
-# #   backend:
-# #     build:
-# #       context: ./backend
-# #       dockerfile: Dockerfile
-# #     container_name: backend
-# #     restart: always
-# #     ports:
-# #       - "8000:8000"  # Laravel API'yi sadece localhost'tan erişilebilir yap
-# #     volumes:
-# #       - ./backend:/var/www/html
- 
- 
-
-# #   # Vue UI Service
-# #   ui:
-# #     build:
-# #       context: ./ui
-# #       dockerfile: Dockerfile
-# #     container_name: ui
-# #     restart: always
-# #     ports:
-# #       - "8080:8080"  # Vite için varsayılan port
-# #     volumes:
-# #       - ./ui:/app
-# #     environment:
-# #       - NODE_ENV=development
-
-# #   # # PostgreSQL Database Service
-# #   # pgsql:
-# #   #   image: postgres:13
-# #   #   container_name: pgsql
-# #   #   restart: always
-# #   #   volumes:
-# #   #     - pgdata:/var/lib/postgresql/data
-# #   #   environment:
-# #   #     POSTGRES_DB: blog_db
-# #   #     POSTGRES_USER: postgres
-# #   #     POSTGRES_PASSWORD: postgres
-# #   #   ports:
-# #   #     - "5432:5432"  
-
-# # # Volumes
-# # volumes:
-# #   pgdata:
