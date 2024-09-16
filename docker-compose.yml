@@ -11,7 +11,7 @@
      ports:
        - "8000:80"
      volumes:
-       - ./backend:/var/www/html
+       - ./backend/storage:/var/www/html/storage
      environment:
        - DB_CONNECTION=pgsql
        - DB_HOST=pgsql  # Localhost'a Docker'dan erişim için 'host.docker.internal' kullan
@@ -33,6 +33,7 @@
        - "8080:8080"
      volumes:
        - ./ui:/app
+       - /app/node_modules
      environment:
        - NODE_ENV=development
      networks:
