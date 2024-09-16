@@ -1,7 +1,7 @@
 <template>
   <div class="employee-container">
     <div class="employee-list-container">
-      <h2>Çalışanlar Listesi</h2>
+      <h2>Çalışanlar Listesiss</h2>
       <ul class="employee-list">
         <li v-for="employee in employees" :key="employee.id" class="employee-item">
           {{ employee.first_name }} {{ employee.last_name }} - {{ employee.email }}
