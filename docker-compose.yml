@@ -21,23 +21,25 @@
        - DB_PASSWORD=password123  # PostgreSQL'de oluşturulan şifre
      networks:
         - iceberg-digital-network
-
+     depends_on:
+        - pgsql
 #   # Vue UI Service
    ui:
      build:
        context: ./ui
        dockerfile: Dockerfile
      container_name: ui
-     restart: always
      ports:
        - "8080:8080"
      volumes:
-       - ./ui:/app
+       - ./ui:/www
+       - /app/node_modules
      environment:
-       - NODE_ENV=development
+       - CHOKIDAR_USEPOLLING=true
      networks:
         - iceberg-digital-network
-
+     depends_on: 
+        - backend
      # PostgreSQL Database Service
    pgsql:
        image: postgres:16

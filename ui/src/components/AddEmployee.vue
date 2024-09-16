@@ -1,7 +1,7 @@
 
 <template>
   <div class="employee-form">
-    <h2>Çalışan Eklee</h2>
+    <h2>Çalışan Ekle</h2>
     <Form  @submit="addEmployee" v-slot="{ isSubmitting, meta }">
       <div>
         <label for="first-name">Ad:</label>
