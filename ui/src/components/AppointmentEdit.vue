@@ -426,13 +426,10 @@ export default {
 
 <style scoped>
 .appointment-form {
-  margin: 20px auto;
-  width: 60%;
-  position: absolute;
-  right: 5%;
-  padding: 20px;
-  background-color: #ecf0f1;
-  min-height: 100vh;
+  margin-left: 250px;
+    position: relative;
+    margin-top: 20px;
+  
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -502,13 +499,7 @@ export default {
 }
 /* 768px ve altı için stil */
 @media (max-width: 768px) {
-  .appointment-form {
-    width: 80%;
-    right: 30px;
-    position: absolute;
-    margin-left: 0;
-    padding: 15px;
-  }
+
 
   .appointment-form h2 {
     font-size: 24px;
@@ -526,12 +517,7 @@ export default {
 
 /* 480px ve altı için stil */
 @media (max-width: 480px) {
-  .appointment-form {
-    width: 80%;
-    right: 10px;
-    position: absolute;
-    padding: 10px;
-  }
+ 
 
   .appointment-form h2 {
     font-size: 20px;
@@ -553,6 +539,11 @@ export default {
     padding: 10px;
   }
 }
+@media screen and (max-width: 576px) {
+.appointment-form {
+  margin-left: 100px;
+}
+ }
 </style>
 
 

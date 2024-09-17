@@ -413,19 +413,14 @@ async fetchPostcodeDetails() {
 
 <style scoped>
 .appointment-form {
-  width: 60%;
-  position: absolute;
-  right: 5%;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 5px;
-  background-color: #ecf0f1;
-  min-height: 100vh;
+  margin-left: 250px;
+    position: relative;
+  margin-top: 20px;
+    border-radius: 5px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  box-sizing: border-box;
 }
 
 .appointment-form h2 {
@@ -486,59 +481,10 @@ async fetchPostcodeDetails() {
 .appointment-form form button:hover {
   background-color: #2980b9;
 }
-
-/* 768px ve altı için stil */
-@media (max-width: 768px) {
-  .appointment-form {
-    width: 80%;
-    right: 30px;
-    position: absolute;
-    margin-left: 0;
-    padding: 15px;
-  }
-
-  .appointment-form h2 {
-    font-size: 24px;
-  }
-
-  .appointment-form form {
-    padding: 15px;
-  }
-
-  .appointment-form form button {
-    font-size: 18px;
-    padding: 12px;
-  }
+@media screen and (max-width: 576px) {
+.appointment-form {
+  margin-left: 100px;
 }
-
-/* 480px ve altı için stil */
-@media (max-width: 480px) {
-  .appointment-form {
-    width: 80%;
-    right: 10px;
-    position: absolute;
-    padding: 10px;
-  }
-
-  .appointment-form h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
-  }
-
-  .appointment-form form {
-    padding: 10px;
-  }
-
-  .appointment-form form input,
-  .appointment-form form select {
-    padding: 8px;
-    font-size: 14px;
-  }
-
-  .appointment-form form button {
-    font-size: 16px;
-    padding: 10px;
-  }
-}
+ }
 </style>
 

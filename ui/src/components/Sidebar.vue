@@ -1,37 +1,67 @@
 <template>
-  <aside :class="['sidebar', { open: isSidebarOpen }]">
-    <div class="logo">
-      <h1>Iceberg Estates</h1>
+  <div class="container-fluid">
+    <div class="row flex-nowrap">
+      <!-- Sidebar Başlangıcı -->
+      <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark menu_container">
+        <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-4 text-white min-vh-100">
+          <!-- Menü Başlığı -->
+          <router-link to="/dashboard" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span class=" d-none d-sm-inline brand_name">Iceberg Estates</span>
+          </router-link>
+
+        
+
+          <!-- Navigasyon Linkleri -->
+          <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+            <li class="nav-item">
+              <router-link to="/dashboard" class="nav-link align-middle px-0">
+                <i class="fa-solid fa-house"></i> <span class="ms-1 fs-5 d-none d-sm-inline">Dashboard</span>
+              </router-link>
+            </li>
+           
+                <li class="nav-item">
+                  <router-link to="/appointments" class="nav-link px-0">
+                    <i class="fa-solid fa-calendar-check"></i>  <span class="d-none ms-1 fs-5 d-sm-inline">Tüm Randevular</span>
+                  </router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/appointments/new" class="nav-link px-0">
+                    <i class="fa-regular fa-calendar-plus"></i>  <span class="d-none ms-1 fs-5 d-sm-inline">Yeni Randevu</span>
+                  </router-link>
+                </li>
+                <li class="nav-item" v-show="userRole === 'admin'">
+              <router-link to="/employees" class="nav-link px-0 align-middle">
+                <i class="fa-solid fa-user"></i> <span class="ms-1 d-none fs-5 d-sm-inline">Çalışanlar</span>
+              </router-link>
+            </li>
+            <li class="nav-item" v-show="userRole === 'admin'">
+              <router-link to="/add-employee" class="nav-link px-0 align-middle">
+                <i class="fa-solid fa-user-plus"></i> <span class="ms-1 d-none fs-5 d-sm-inline">Çalışan Ekle</span>
+              </router-link>
+            </li>
+           
+            <li>
+              <button @click="logout" class="btn btn-danger w-100 mt-3"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </li>
+          </ul>
+
+          <!-- Kullanıcı Menüsü -->
+          <hr>
+          <div class="dropdown pb-4">
+            <i class="fa-solid fa-user-tie me-1"></i>
+              <span class="d-none d-sm-inline mx-1 ">{{ userName }}</span>
+              <span class="user_role">{{ userRole }}</span>
+           
+          </div>
+        </div>
+      </div>
+
+      <!-- İçerik Alanı -->
+     
     </div>
-    <div class="user_info">
-      <h2 v-if="userName">{{ userName + ' ,' + userRole }}</h2> <!-- Kullanıcının adını göster -->
-      <h6 v-else>Kullanıcı Bilgileri Yükleniyor...</h6>
-    </div>
-    <nav>
-      <ul>
-        <li>
-          <router-link to="/dashboard">Dashboard</router-link>
-        </li>
-        <li>
-          <router-link to="/appointments">Randevular</router-link>
-        </li>
-        <li>
-          <router-link to="/appointments/new">Randevu Oluştur</router-link>
-        </li>
-        <li v-show="userRole == 'admin'"><router-link to="/add-employee">Çalışan Ekle</router-link></li>
-        <li v-show="userRole == 'admin'"><router-link to="/employees">Çalışanlar</router-link></li>
-        <li>
-          <button @click="logout">Logout</button>
-        </li>
-      </ul>
-    </nav>
-    <!-- Aç/Kapa Butonu -->
-    <button class="toggle-button" @click="toggleSidebar">
-      <span v-if="!isSidebarOpen">&#9776; </span>
-      <span v-else class="close-button">&times;</span> <!-- Sağ üste yerleşen kapatma ikonu -->
-    </button>
-  </aside>
+  </div>
 </template>
+
 <script>
 import { useUserStore } from '@/stores/user';
 import axios from 'axios';
@@ -41,24 +71,20 @@ export default {
   data() {
     return {
       userStore: useUserStore(),
-      isSidebarOpen: false, // Mobilde menü başlangıçta kapalı
     };
   },
   computed: {
     userName() {
       return this.userStore.userName;
     },
-    userRole( ) {
+    userRole() {
       return this.userStore.userRole;
-    }
+    },
   },
   created() {
     this.userStore.fetchUser();
   },
   methods: {
-    toggleSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen; // Menü aç/kapa işlevi
-    },
     async logout() {
       try {
         await axios.post('http://localhost:8000/api/logout', {}, {
@@ -74,7 +100,7 @@ export default {
           title: 'Başarılı!',
           text: 'Başarıyla çıkış yaptınız.',
           icon: 'success',
-          confirmButtonText: 'Tamam'
+          confirmButtonText: 'Tamam',
         }).then(() => {
           this.$router.push('/');
         });
@@ -84,120 +110,51 @@ export default {
           title: 'Hata!',
           text: 'Çıkış yapılamadı. Lütfen tekrar deneyin.',
           icon: 'error',
-          confirmButtonText: 'Tamam'
+          confirmButtonText: 'Tamam',
         });
       }
     },
   },
 };
 </script>
+
 <style scoped>
-.sidebar {
-  width: 250px;
-  background-color: #2c3e50;
+.menu_container {
+  position: fixed;
   min-height: 100vh;
-  padding: 20px;
-  color: #ecf0f1;
-  transition: width 0.3s ease;
-  position: fixed; /* Menü ekranın üstünde kalır */
-  top: 0;
-  left: 0;
-  z-index: 1000; /* Diğer componentlerin üstünde */
+  width:100px;
 }
-
-.sidebar.open {
-  z-index: 1000; /* Açık olduğunda üstte kalmasını sağlar */
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
-
-.logo{
-  margin-top: 40px;
+.dropdown {
+  margin-top: auto;
 }
-
-.logo h1 {
-  font-size: 24px;
-  margin-bottom: 30px;
-  color: #ecf0f1;
+.user_role {
+  font-size: 12px;
+  font-weight: bold;
+  color: #999;
 }
-
-nav ul {
-  list-style-type: none;
-  padding: 0;
+i {
+  font-size: 2rem;
 }
-
-nav ul li {
-  margin: 20px 0;
+.nav-item span {
+  color: white;
 }
-
-nav ul li a {
-  text-decoration: none;
-  color: #ecf0f1;
-  font-size: 18px;
-  display: block;
-  padding: 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+.nav-item {
+  padding: 10px 0 10px 0;
 }
-
-nav ul li a:hover {
-  background-color: #34495e;
+.brand_name {
+  font-size: 1.6rem;
+  font-weight: bold;
 }
-
-button {
-  text-decoration: none;
-  font-size: 18px;
-  padding: 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-  background-color: #2c3e50;
-  color: #ecf0f1;
+@media screen and (max-width: 576px) {
+.menu_container {
+ width: 100px;
 }
-
-button:hover {
-  background-color: #34495e;
-}
-
-.toggle-button {
-  display: none;
-  position: fixed; /* Menü butonunun sabit olmasını sağlar */
-  top: 10px;
-  left: 10px;
-  background-color: transparent;
-  color: #ecf0f1;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  z-index: 1001; /* Diğer içeriklerin üstünde */
-}
-
-.close-button {
-  font-size: 30px;
-}
-
-/* Mobil cihazlar için yan menüyü açma/kapatma */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 60px;
-    padding: 10px;
-    overflow: hidden;
-    transition: width 0.3s ease;
-  }
-
-  .sidebar.open {
-    width: 250px;
-    z-index: 1000; /* Açık olduğunda üstte kalmasını sağlar */
-  }
-
-  .logo h1, .user_info, nav ul {
-    display: none;
-  }
-
-  .sidebar.open .logo h1, .sidebar.open .user_info, .sidebar.open nav ul {
-    display: block;
-  }
-
-  .toggle-button {
-    display: block;
-  }
 }
 </style>
-

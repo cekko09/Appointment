@@ -1,12 +1,14 @@
 <template>
   <div class="employee-container">
     <div class="employee-list-container">
-      <h2>Çalışanlar Listesiss</h2>
-      <ul class="employee-list">
-        <li v-for="employee in employees" :key="employee.id" class="employee-item">
+      <h2>Çalışanlar Listesi</h2>
+      <ul class="employee-list" >
+        <li v-for="employee in employees" :key="employee.id" class="employee-item" >
           {{ employee.first_name }} {{ employee.last_name }} - {{ employee.email }}
+         <div>
           <button @click="editEmployee(employee)" class="edit-button">Düzenle</button>
           <button @click="deleteEmployee(employee.id)" class="delete-button">Sil</button>
+         </div>
         </li>
       </ul>
   
@@ -236,25 +238,30 @@ const updateEmployee = async () => {
   
   <style scoped>
   .employee-container{
-    width: 80%;
-  position: absolute;
-  right: 5%;
+    display: flex;
+  justify-content: center;
+  align-items: center;
   }
   .employee-list-container {
-    width: 50%;
-    margin: 50px auto;
+    width: 60%;
+    margin-left: 250px;
+    position: relative;
+    top: 20% !important;
+    transform: translateY(20%);
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: #f9f9f9;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
+    overflow-x: auto;
 
   }
   
   .employee-list {
     list-style-type: none;
     padding: 0;
+    max-width: 100%;
+    min-width: 300px;
   }
   
   .employee-item {
@@ -277,8 +284,6 @@ const updateEmployee = async () => {
   .edit-button {
     background-color: #ffc107;
     color: white;
-    right: 80px;
-    position: absolute;
   }
   
   .delete-button {
@@ -296,6 +301,10 @@ const updateEmployee = async () => {
   
   .edit-form-container {
     margin-top: 20px;
+    width: 100%;
+    position: relative;
+    top: 20% !important;
+    transform: translateY(20%);
   }
   
   .employee-form {
@@ -359,59 +368,11 @@ const updateEmployee = async () => {
   background-color: #ccc;
   cursor: not-allowed;
 }
-  /* Media Queries for Responsive Design */
-  
-  /* For devices with a width up to 768px */
-  @media (max-width: 767px) {
-    .employee-list-container {
-      width: 80%;
-    right: 30px;
-    position: absolute;
-    }
-    .edit-button, .delete-button {
-      margin-left: 0;
-      margin-top: 5px;
-    }
-  
-    .employee-form input {
-      font-size: 14px;
-    }
-  
-    .submit-button, .cancel-button {
-      font-size: 14px;
-      padding: 8px;
-    }
-  }
-  
-  /* For devices with a width up to 480px */
-  @media (max-width: 480px) {
-    .employee-list-container {
-      width: 100%;
-    right: 0px;
-    position: absolute;
-      padding: 10px;
-    }
-  
-    .employee-item {
-      padding: 8px 0;
-    }
-  
-    .edit-button, .delete-button {
-      margin-left: 0;
-      margin-top: 5px;
-      padding: 4px 8px;
-      font-size: 12px;
-    }
-  
-    .employee-form input {
-      font-size: 12px;
-      padding: 8px;
-    }
-  
-    .submit-button, .cancel-button {
-      font-size: 14px;
-      padding: 8px;
-    }
-  }
+ @media screen and (max-width: 576px) {
+.employee-list-container {
+  margin-left: 100px;
+    width: 70%;
+}
+ }
   </style>
   

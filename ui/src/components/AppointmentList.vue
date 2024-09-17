@@ -1,5 +1,6 @@
 <template>
   <div class="appointment-list-container">
+    <div class="content">
     <h2>Randevular Listesi</h2>
 
     <!-- Yükleniyor mesajı -->
@@ -65,6 +66,7 @@
         </table>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -195,16 +197,18 @@ export default {
 <style scoped>
 /* Genel stiller */
 .appointment-list-container {
-  width: 60%;
-  position: absolute;
-  right: 5%;
+  margin-left: 250px;
+    position: relative;
+    top: 20% !important;
+    height: 100vh;
+    transform: translateY(0%);
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 40px;
 }
+
 .loading-message {
   text-align: center;
   font-size: 18px;
@@ -296,9 +300,10 @@ export default {
   background-color: #c0392b;
 }
 
-/* Medya sorguları */
-
-/* 768px ve altı */
-
+@media screen and (max-width: 576px) {
+.appointment-list-container {
+  margin-left: 100px;
+}
+ }
 
 </style>

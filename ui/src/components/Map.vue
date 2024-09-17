@@ -1,6 +1,5 @@
 <template>
   <div>
-    <button @click="selectLocation">Adresi Seç</button>
     <div id="map"></div>
   </div>
 </template>

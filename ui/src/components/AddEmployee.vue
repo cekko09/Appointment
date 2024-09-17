@@ -1,5 +1,6 @@
 
 <template>
+  <div class="emp_list_container">
   <div class="employee-form">
     <h2>Çalışan Ekle</h2>
     <Form  @submit="addEmployee" v-slot="{ isSubmitting, meta }">
@@ -34,6 +35,7 @@
       <button type="submit" :disabled="!meta.valid || isSubmitting">Çalışan Ekle</button>
     </Form>
   </div>
+</div>
 </template>
 
 <script>
@@ -78,7 +80,12 @@ export default {
           },
         });
       
-        
+        this.$swal.fire({
+          title: 'Başarılı!',
+          text: 'Başarıyla eklendi',
+          icon: 'success',
+          confirmButtonText: 'Tamam'
+        });
         this.$router.push('/employees');
       } catch (error) {
       if (error.response.data.errors.email) {
@@ -114,16 +121,24 @@ export default {
 </script>
 
 <style scoped>
+.emp_list_container {
+  display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 .employee-form {
-  width: 400px;
-  margin: 50px auto;
+  margin-left: 250px;
+    position: relative;
+    top: 20% !important;
+   
+    transform: translateY(10%);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
-  width: 65%;
-  position: absolute;
-  right: 5%;
+  width: 50%;
+  
 }
 
 .employee-form h2 {
@@ -175,62 +190,12 @@ export default {
 .employee-form input.touched {
   border-color: #e74c3c; /* Kırmızı renkte çerçeve */
 }
-/* Mobil cihazlar (768px altı) için stil */
-@media (max-width: 768px) {
-  .employee-form {
-    width: 80%;
-    right: 10px;
-    position: absolute;
-    margin: 20px auto;
-    padding: 20px;
-    margin: 20px;
-  }
-
-  .employee-form h2 {
-    font-size: 24px;
-  }
-
-  .employee-form input {
-    padding: 8px;
-  }
-
-  .employee-form button {
-    padding: 12px;
-    font-size: 14px;
-  }
+@media screen and (max-width: 576px) {
+.employee-form {
+  margin-left: 100px;
+    width: 70%;
 }
 
-/* Telefon ekranları (480px altı) için stil */
-@media (max-width: 480px) {
-  .employee-form {
-    width: 70%;
-    right: 10px;
-    position: absolute;
-    padding: 15px;
-    margin: 20px;
-  }
 
-  .employee-form h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
-  }
-
-  .employee-form input {
-    padding: 6px;
-    font-size: 14px;
-  }
-
-  .employee-form button {
-    padding: 10px;
-    font-size: 12px;
-  }
-
-  .employee-form form div {
-    margin-bottom: 10px;
-  }
-
-  .employee-form label {
-    font-size: 14px;
-  }
 }
 </style>
