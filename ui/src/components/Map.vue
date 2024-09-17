@@ -11,7 +11,7 @@ export default {
   props: {
     initialLat: {
       type: Number,
-      default: 51.5074, // Varsayılan olarak Londra
+      default: 51.5074, 
     },
     initialLng: {
       type: Number,
@@ -24,7 +24,7 @@ export default {
       directionsService: null,
       directionsRenderer: null,
       marker: null,
-      markers: [], // Tüm işaretçileri saklayacağız
+      markers: [], 
     };
   },
   mounted() {
@@ -49,7 +49,7 @@ export default {
       this.directionsService = new google.maps.DirectionsService();
       this.directionsRenderer = new google.maps.DirectionsRenderer({
         map: this.map,
-        suppressMarkers: true,  // Varsayılan işaretçiyi devre dışı bırak
+        suppressMarkers: true,  
       });
       this.directionsRenderer.setMap(this.map);
 
@@ -58,11 +58,11 @@ export default {
       });
     },
     placeMarker(location) {
-      // Önceki tüm işaretçileri kaldır
+      
       this.markers.map((marker) => toRaw(marker).setMap(null))
       this.markers = [];
 
-      // Yeni işaretçiyi oluştur ve haritaya ekle
+      
       const newMarker = new google.maps.Marker({
         position: location,
         map: this.map,
@@ -71,10 +71,10 @@ export default {
 
       this.markers.push(newMarker);
 
-      // Haritayı merkezle
+      
       this.map.setCenter(location);
 
-      // Adres bilgilerini alın
+     
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ location: location }, (results, status) => {
         if (status === 'OK' && results[0]) {
@@ -88,7 +88,7 @@ export default {
         }
       });
 
-      // Yol güzergahını güncelle
+      
       this.calculateRoute(location);
     },
     calculateRoute(destination) {
@@ -107,13 +107,13 @@ export default {
       });
     },
     setMarker(lat, lng) {
-      // Dışarıdan adres seçildiğinde bu fonksiyonu çağırarak haritada marker yerleştirebilirsiniz
+     
       this.markers.map((marker) => toRaw(marker).setMap(null))
       this.markers = [];
 
       const location = { lat, lng };
 
-      // Yeni işaretçiyi oluştur ve haritaya ekle
+      
       const newMarker = new google.maps.Marker({
         position: location,
         map: this.map,
@@ -121,9 +121,9 @@ export default {
       });
 
       this.markers.push(newMarker);
-      this.map.setCenter(location); // Haritayı merkezle
+      this.map.setCenter(location); 
 
-      this.calculateRoute(location); // Yol güzergahını güncelle
+      this.calculateRoute(location); 
     }
   },
 };

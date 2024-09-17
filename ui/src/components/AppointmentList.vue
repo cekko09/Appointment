@@ -3,10 +3,10 @@
     <div class="content">
     <h2>Randevular Listesi</h2>
 
-    <!-- Yükleniyor mesajı -->
+    
     <div v-if="loading" class="loading-message">Yükleniyor...</div>
 
-    <!-- Çalışan filtreleme seçeneği -->
+    
     <div v-else>
       <div class="filter-container">
         <label for="employee-filter">Emlakçı Çalışanı:</label>
@@ -18,7 +18,6 @@
         </select>
       </div>
 
-      <!-- Tarih Aralığı Filtreleme Seçeneği -->
       <div class="date-filter-container">
         <label for="start-date">Başlangıç Tarihi:</label>
         <input type="date" id="start-date" v-model="startDate" @change="filterAppointmentsByDate" />
@@ -27,7 +26,7 @@
         <input type="date" id="end-date" v-model="endDate" @change="filterAppointmentsByDate" />
       </div>
 
-      <!-- Tarih Sıralama Select Box -->
+      
       <div class="sort-container">
         <label for="sort-order">Tarihe Göre Sırala:</label>
         <select v-model="sortOrder" @change="sortAppointments">
@@ -195,7 +194,7 @@ export default {
 
 
 <style scoped>
-/* Genel stiller */
+
 .appointment-list-container {
   margin-left: 250px;
     position: relative;
@@ -217,13 +216,13 @@ export default {
   margin: 20px 0;
 }
 
-/* Filtreleme ve tarih aralığı konteynerleri */
+
 .filter-container,
 .date-filter-container {
   margin-bottom: 20px;
   display: flex;
   align-items: center;
-  flex-wrap: wrap; /* Flex öğelerinin taşmasını önlemek için */
+  flex-wrap: wrap; 
 }
 
 .filter-container label,
@@ -239,10 +238,10 @@ export default {
   border-radius: 4px;
   border: 1px solid #ccc;
   margin-right: 15px;
-  flex: 1; /* Esnek boyutlandırma */
+  flex: 1; 
 }
 
-/* Tablo stilleri */
+
 .appointment-table {
   width: 100%;
   border-collapse: collapse;
@@ -270,7 +269,6 @@ export default {
   text-decoration: line-through;
 }
 
-/* Buton stilleri */
 .edit-button,
 .delete-button {
   margin-left: 5px;

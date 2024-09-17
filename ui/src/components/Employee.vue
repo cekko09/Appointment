@@ -32,19 +32,16 @@
             <span v-if="errors[0]">{{ errors[0] }}</span>
           </Field>
 
-          <!-- Kaydet Butonu Yalnızca Alanlar Değiştiğinde Aktif -->
           <button type="submit" class="submit-button" :disabled="!meta.dirty">Kaydet</button>
           <button @click="cancelEdit" type="button" class="cancel-button">İptal</button>
         </div>
       </Form>
       </div>
   
-      <!-- Geri Bildirim Mesajları -->
       <div v-if="message" :class="`alert ${messageType}`">
         {{ message }}
       </div>
   
-      <!-- Yüklenme Göstergesi -->
       <div v-if="loading" class="loading">
         Yükleniyor...
       </div>
@@ -59,7 +56,6 @@
   import { Form, Field, defineRule } from 'vee-validate';
 import { required, email } from '@vee-validate/rules';
 
-// Vee-validate kuralları tanımlama
 defineRule('required', required);
 defineRule('email', email);
 

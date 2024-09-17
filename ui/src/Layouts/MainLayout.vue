@@ -1,4 +1,3 @@
-<!-- src/layouts/MainLayout.vue -->
 <template>
     <div class="main-container ">
       <!-- Giriş yapıldıysa Sidebar gösterilecek -->
@@ -23,6 +22,6 @@
   </script>
   <style scoped>
 .main-container {
-  widows: 100%;
+  width:  100%;
 }
 </style>

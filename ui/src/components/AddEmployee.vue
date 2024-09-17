@@ -89,7 +89,6 @@ export default {
         this.$router.push('/employees');
       } catch (error) {
       if (error.response.data.errors.email) {
-        // E-posta adresi zaten kayıtlı ise
         this.$swal.fire({
           title: 'Hata!',
           text: 'Bu e-posta adresi zaten kayıtlı.',
@@ -188,7 +187,7 @@ export default {
 }
 
 .employee-form input.touched {
-  border-color: #e74c3c; /* Kırmızı renkte çerçeve */
+  border-color: #e74c3c;
 }
 @media screen and (max-width: 576px) {
 .employee-form {
