@@ -5,7 +5,7 @@
         <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-4 text-white min-vh-100">
           <router-link to="/dashboard"
             class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <span class=" d-none d-sm-inline brand_name">Iceberg Estates</span>
+            <span class=" d-none d-sm-inline brand_name">Randevu Yönetim</span>
           </router-link>
 
 
