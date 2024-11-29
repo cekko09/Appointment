@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <h2 class="login-title">Süperadmin Girişi</h2>
+    <h2 class="login-title">Randevu Uygulaması Giriş</h2>
     <form @submit.prevent="login" class="login-form">
       <div class="form-group">
         <label for="email">Email</label>

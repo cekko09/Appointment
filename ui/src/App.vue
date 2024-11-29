@@ -19,5 +19,12 @@ export default {
 body {
   margin: 0;
   padding: 0;
+  height: 100vh;
+}
+#app {
+  height: 100%;
+}
+.main-container {
+  height: 100%;
 }
 </style>

@@ -1,4 +1,3 @@
-<!-- src/layouts/AuthLayout.vue -->
 <template>
     <div>
       <!-- Giriş yapılmadan önce kullanılacak layout -->

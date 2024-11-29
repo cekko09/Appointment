@@ -1,112 +1,167 @@
 <template>
-    <aside class="sidebar">
-      <div class="logo">
-        <h1>Iceberg Estates</h1>
-      </div>
-      <nav>
-        <ul>
-          <li>
-            <router-link to="/dashboard">Dashboard</router-link>
-          </li>
-          <li>
-            <router-link to="/appointments">Randevular</router-link>
-          </li>
-          <li>
-            <router-link to="/appointments/new">Randevu Oluştur</router-link>
-          </li>
-          <li><router-link to="/add-employee">Çalışan Ekle</router-link></li>
-          <li><router-link to="/employees">Çalışanlar</router-link></li>
-          <li>
-            <button @click="logout">Logout</button>
-          </li>
-        </ul>
-      </nav>
-    </aside>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  import { useRouter } from 'vue-router';
-  export default {
-    name: 'Sidebar',
-    setup() {
-    const router = useRouter();
+  <div class="container-fluid">
+    <div class="row flex-nowrap">
+      <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark menu_container">
+        <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-4 text-white min-vh-100">
+          <router-link to="/dashboard"
+            class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span class=" d-none d-sm-inline brand_name">Randevu Yönetim</span>
+          </router-link>
 
-   
-    const logout = async () => {
+
+
+          <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+            <li class="nav-item">
+              <router-link to="/dashboard" class="nav-link align-middle px-0">
+                <i class="fa-solid fa-house"></i> <span class="ms-1 fs-5 d-none d-sm-inline">Dashboard</span>
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link to="/appointments" class="nav-link px-0">
+                <i class="fa-solid fa-calendar-check"></i> <span class="d-none ms-1 fs-5 d-sm-inline">Tüm
+                  Randevular</span>
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/appointments/new" class="nav-link px-0">
+                <i class="fa-regular fa-calendar-plus"></i> <span class="d-none ms-1 fs-5 d-sm-inline">Yeni
+                  Randevu</span>
+              </router-link>
+            </li>
+            <li class="nav-item" v-show="userRole === 'admin'">
+              <router-link to="/employees" class="nav-link px-0 align-middle">
+                <i class="fa-solid fa-user"></i> <span class="ms-1 d-none fs-5 d-sm-inline">Çalışanlar</span>
+              </router-link>
+            </li>
+            <li class="nav-item" v-show="userRole === 'admin'">
+              <router-link to="/add-employee" class="nav-link px-0 align-middle">
+                <i class="fa-solid fa-user-plus"></i> <span class="ms-1 d-none fs-5 d-sm-inline">Çalışan Ekle</span>
+              </router-link>
+            </li>
+
+            <li>
+              <button @click="logout" class="btn btn-danger w-100 mt-3"><i
+                  class="fa-solid fa-right-from-bracket"></i></button>
+            </li>
+          </ul>
+
+          <hr>
+          <div class="dropdown pb-4">
+            <i class="fa-solid fa-user-tie me-1"></i>
+            <span class="d-none d-sm-inline mx-1 ">{{ userName }}</span>
+            <span class="user_role">{{ userRole }}</span>
+
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</template>
+
+<script>
+import { useUserStore } from '@/stores/user';
+import axios from 'axios';
+
+export default {
+  name: 'Sidebar',
+  data() {
+    return {
+      userStore: useUserStore(),
+    };
+  },
+  computed: {
+    userName() {
+      return this.userStore.userName;
+    },
+    userRole() {
+      return this.userStore.userRole;
+    },
+  },
+  created() {
+    this.userStore.fetchUser();
+  },
+  methods: {
+    async logout() {
       try {
         await axios.post('http://localhost:8000/api/logout', {}, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        localStorage.removeItem('token'); // Token'ı temizle
-        // Giriş durumunu manuel olarak güncelle
-        window.dispatchEvent(new Event('storage')); // Yeni bir event tetikleyin
-        router.push('/');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('token');
+        window.dispatchEvent(new Event('storage'));
+
+        this.$swal.fire({
+          title: 'Başarılı!',
+          text: 'Başarıyla çıkış yaptınız.',
+          icon: 'success',
+          confirmButtonText: 'Tamam',
+        }).then(() => {
+          this.$router.push('/');
+        });
       } catch (error) {
         console.error('Logout failed', error);
+        this.$swal.fire({
+          title: 'Hata!',
+          text: 'Çıkış yapılamadı. Lütfen tekrar deneyin.',
+          icon: 'error',
+          confirmButtonText: 'Tamam',
+        });
       }
-    };
-
-    return { logout };
+    },
   },
-  };
-  </script>
-  <style scoped>
-  .sidebar {
-    width: 250px;
-    background-color: #2c3e50;
-    min-height: 100vh;
-    padding: 20px;
-    color: #ecf0f1;
-    transition: width 0.3s ease;
+};
+</script>
+
+<style scoped>
+.menu_container {
+  position: fixed;
+  min-height: 100vh;
+  width: 250px;
+}
+
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.dropdown {
+  margin-top: auto;
+}
+
+.user_role {
+  font-size: 12px;
+  font-weight: bold;
+  color: #999;
+}
+
+i {
+  font-size: 2rem;
+}
+
+.nav-item span {
+  color: white;
+}
+
+.nav-item {
+  padding: 10px 0 10px 0;
+}
+
+.brand_name {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 576px) {
+  .menu_container {
+    width: 100px;
   }
-  
-  .logo h1 {
-    font-size: 24px;
-    margin-bottom: 30px;
-    color: #ecf0f1;
-  }
-  
-  nav ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  nav ul li {
-    margin: 20px 0;
-  }
-  
-  nav ul li a {
-    text-decoration: none;
-    color: #ecf0f1;
-    font-size: 18px;
-    display: block;
-    padding: 10px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-  }
-  
-  nav ul li a:hover {
-    background-color: #34495e;
-  }
-  
-  /* Mobil cihazlar için yan menüyü gizleme ve açma */
-  @media (max-width: 768px) {
-    .sidebar {
-      width: 60px;
-      padding: 10px;
-    }
-  
-    .logo h1 {
-      display: none;
-    }
-  
-    nav ul li a {
-      font-size: 16px;
-      padding: 8px;
-    }
-  }
-  </style>
-  
+}
+</style>

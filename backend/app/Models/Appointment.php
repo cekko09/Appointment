@@ -22,6 +22,7 @@ class Appointment extends Model
         'duration',
         'departure_time',  
         'available_time',
+        'address',
         
     ];
 }
